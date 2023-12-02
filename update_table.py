@@ -144,7 +144,7 @@ def update_last_time():
 def run_periodic_update():
     import time
     while True:
-        time.sleep(600)  # 3시간 대기 (3시간 = 10800초)
+        time.sleep(10800)  # 3시간 대기 (3시간 = 10800초)
         update_table_all()
         update_database()
         update_last_time()

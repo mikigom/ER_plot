@@ -1,29 +1,40 @@
-import copy
 import dash
+import copy
 import threading
 import json
 from dash import dcc, html, Input, Output, State, ALL
 import dash_bootstrap_components as dbc
+import warnings
+
+from pandas.errors import SettingWithCopyWarning
+warnings.simplefilter(action='ignore', category=(SettingWithCopyWarning))
 
 from config import GLOBAL_FONT_FAMILY, PRIMARY_COLOR, BACKGROUND_COLOR, TEXT_COLOR
-from config import roles_mapping, role_translation
+from config import default_roles_mapping
+from config import role_translation
 import dash_bootstrap_components as dbc
 from update_table import update_table_all, update_database, update_last_time, run_periodic_update, get_last_update_time, get_database
 from plot import customize_plot, plot_top3_vs_winrate, pick_pick_vs_win, plot_pick_vs_rp, plot_rp_vs_win
 from styles import dropdown_style, button_style, container_style, default_character_style, selected_character_style
 
 
-roles_mapping = copy.deepcopy(roles_mapping)
-
-
-def generate_character_grid(characters):
+def generate_character_grid(characters, selected_characters):
     return html.Div(
         [dbc.Row(
-            [dbc.Col(html.Div(character, id={'type': 'char-box', 'index': i}, className='character-box', style=default_character_style), width='auto') for i, character in enumerate(characters)],
+            [dbc.Col(
+                html.Div(
+                    character,
+                    id={'type': 'char-box', 'index': i},
+                    className='character-box',
+                    style=selected_character_style if character in selected_characters else default_character_style
+                ),
+                width='auto'
+            ) for i, character in enumerate(characters)],
             className="justify-content-between",
         )],
         className="container-fluid"
     )
+
 
 # Add custom CSS class for dropdown hover state in your external CSS file or within app layout using the style tag
 external_css = [
@@ -32,13 +43,17 @@ external_css = [
     '/assets/custom_styles.css'  # Path to your custom CSS file
 ]
 app = dash.Dash(__name__, external_stylesheets=external_css)
+server = app.server
+server.secret_key = 'rlatngksanrjqnrdldhkenfnal'  # 안전한 키를 설정하세요.
 
 
 app.layout = html.Div([
     # Fixed Div for selection bars
+    dcc.Store(id='session_roles_mapping', storage_type='local'),
+    dcc.Interval(id='init-interval', interval=1, n_intervals=0),
     html.Div([
         html.Div(id='selected-characters', style={'display': 'none'}),
-        dcc.Store(id='stored-selected-characters'),
+        dcc.Store(id='stored-selected-characters', storage_type='local'),
         # Dropdown for Comparison selection
         dcc.Dropdown(
             id='comparison-dropdown',
@@ -121,21 +136,21 @@ app.layout = html.Div([
         [
             dbc.ModalHeader(dbc.ModalTitle("유저 그룹 정의 편집")),
             dbc.ModalBody(
-                generate_character_grid(roles_mapping['Reference']),
+                id='modal-body',
                 style={'maxHeight': 'calc(100vh - 210px)', 'overflowY': 'auto'}
             ),
             dbc.ModalFooter([
-                dbc.Button("확인", id="confirm-modal", className="ml-auto", n_clicks=0, size="lg",),
+                dbc.Button("확인", id="confirm-modal", className="ml-auto", n_clicks=0, size="lg"),
                 dbc.Button("초기화", id="reset-modal", className="ml-auto", n_clicks=0, size="lg", disabled=True),
-                dbc.Button("취소", id="close-modal", className="ml-auto", n_clicks=0, size="lg",),
+                dbc.Button("취소", id="close-modal", className="ml-auto", n_clicks=0, size="lg"),
             ]),
         ],
         id="modal-edit-user-defined-roles",
         is_open=False,
-        style={"zIndex": 1100, "maxWidth": "100vw"},  # Adjusted maxWidth to 100vw for full viewport width
+        style={"zIndex": 1100, "maxWidth": "100vw"}
     ),
-    dcc.Store(id='confirm-click-flag', data={'clicked': False}),
-    dcc.Store(id='char-box-styles', data={}),
+
+    dcc.Store(id='confirm-click-flag', data={'clicked': False}, storage_type='memory'),
 
     # Rest of the layout
     html.Div(id='slider-value-container',
@@ -201,7 +216,7 @@ app.layout = html.Div([
         id='interval-component',
         interval=60*1000,  # in milliseconds
         n_intervals=0
-    )
+    ),
 ], style={
     'fontFamily': 'Arial, sans-serif',
     'backgroundColor': BACKGROUND_COLOR
@@ -247,9 +262,13 @@ def update_slider(version, tier, comparison):
      Input('comparison-dropdown', 'value'),
      Input('role-dropdown', 'value'),
      Input('confirm-click-flag', 'data')],  # Add the confirm-click-flag input
+    [State('session_roles_mapping', 'data')],
     prevent_initial_call=True
 )
-def update_figure(selected_range, version, tier, comparison, role, confirm_flag):
+def update_figure(selected_range, version, tier, comparison, role, confirm_flag, session_roles_mapping):
+    if session_roles_mapping is None:
+        session_roles_mapping = copy.deepcopy(default_roles_mapping)
+
     database = get_database()
     df = database[(tier, version)]
 
@@ -257,7 +276,7 @@ def update_figure(selected_range, version, tier, comparison, role, confirm_flag)
     # Determine the color for the points based on the role
     if role != 'Whole':
         # If a specific role is selected, characters in that role will have a different color
-        filtered_df['역할군'] = filtered_df['Character'].apply(lambda x: role_translation[role] if x in roles_mapping[role] else '전체')
+        filtered_df['역할군'] = filtered_df['Character'].apply(lambda x: role_translation[role] if x in session_roles_mapping[role] else '전체')
     else:
         # If 'Whole' is selected, all characters have the same color
         filtered_df['역할군'] = '전체'
@@ -280,19 +299,24 @@ def update_figure(selected_range, version, tier, comparison, role, confirm_flag)
     [Output('stored-selected-characters', 'data'),
      Output({'type': 'char-box', 'index': ALL}, 'style')],
     [Input({'type': 'char-box', 'index': ALL}, 'n_clicks'),
-     Input('reset-modal', 'n_clicks')],
+     Input('reset-modal', 'n_clicks'),
+     Input('modal-edit-user-defined-roles', 'is_open'),],
     [State({'type': 'char-box', 'index': ALL}, 'id'),
      State({'type': 'char-box', 'index': ALL}, 'style'),
-     State('stored-selected-characters', 'data')],
+     State('stored-selected-characters', 'data'),
+     State('session_roles_mapping', 'data')],
     prevent_initial_call=True
 )
-def update_characters_and_styles(all_n_clicks, n_reset, all_ids, all_styles, stored_data):
+def update_characters_and_styles(all_n_clicks, n_reset, is_open, all_ids, all_styles, stored_data, session_roles_mapping):
+    if session_roles_mapping is None:
+        session_roles_mapping = copy.deepcopy(default_roles_mapping)
+
     ctx = dash.callback_context
     triggered_id, triggered_prop = ctx.triggered[0]['prop_id'].split('.')
 
     # If the reset button was clicked, reset all styles to default and clear stored data
     if triggered_prop == 'n_clicks' and 'reset-modal' in triggered_id:
-        return [], [default_character_style for _ in all_ids]
+        return None, [default_character_style for _ in all_ids]
 
     # Initialize new_stored_data with stored_data or an empty list if None
     new_stored_data = stored_data or []
@@ -304,7 +328,7 @@ def update_characters_and_styles(all_n_clicks, n_reset, all_ids, all_styles, sto
     if triggered_prop == 'n_clicks' and 'char-box' in triggered_id:
         # Identify which character box was clicked
         clicked_index = json.loads(triggered_id)["index"]
-        character_name = roles_mapping['Reference'][clicked_index]
+        character_name = session_roles_mapping['Reference'][clicked_index]
 
         # Toggle selection and styling
         if character_name in new_stored_data:
@@ -324,30 +348,48 @@ def update_characters_and_styles(all_n_clicks, n_reset, all_ids, all_styles, sto
     Output('modal-edit-user-defined-roles', 'is_open'),
     Output('confirm-click-flag', 'data'),
     Output('role-dropdown', 'value'),
+    Output('session_roles_mapping', 'data'),
     [Input('edit-user-defined-roles-button', 'n_clicks'),
      Input('confirm-modal', 'n_clicks'),
      Input('close-modal', 'n_clicks')],
     [State('modal-edit-user-defined-roles', 'is_open'),
-     State('stored-selected-characters', 'data')]
+     State('stored-selected-characters', 'data'),
+     State('session_roles_mapping', 'data')],
+    prevent_initial_call=True
 )
-def toggle_modal(n_open, n_confirm, n_close, is_open, stored_data):
+def toggle_modal(n_open, n_confirm, n_close, is_open, stored_data, session_roles_mapping):
+    if session_roles_mapping is None:
+        session_roles_mapping = copy.deepcopy(default_roles_mapping)
+
     ctx = dash.callback_context
     if not ctx.triggered:
-        return is_open, dash.no_update, dash.no_update
-    else:
-        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        return is_open, {'clicked': False}, 'Whole', session_roles_mapping
 
-        if button_id == "edit-user-defined-roles-button":
-            return True, {'clicked': False}, dash.no_update
-        elif button_id == "confirm-modal":
-            if n_confirm:
-                roles_mapping['User Defined'] = stored_data or []
-                return False, {'clicked': True}, 'User Defined'
-        elif button_id == "close-modal":
-            if n_close:
-                return False, {'clicked': False}, dash.no_update
+    button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-    return is_open, {'clicked': False}, dash.no_update
+    if button_id == "edit-user-defined-roles-button":
+        return True, {'clicked': False}, dash.no_update, session_roles_mapping
+    elif button_id == "confirm-modal":
+        if n_confirm:
+            updated_roles_mapping = session_roles_mapping.copy()
+            updated_roles_mapping['User Defined'] = stored_data or []
+            return False, {'clicked': True}, 'User Defined', updated_roles_mapping
+    elif button_id == "close-modal":
+        return False, {'clicked': False}, dash.no_update, session_roles_mapping
+
+    return is_open, {'clicked': False}, dash.no_update, session_roles_mapping
+
+
+@app.callback(
+    Output('modal-body', 'children'),
+    [Input('stored-selected-characters', 'data')],
+    prevent_initial_call=True
+)
+def update_modal_content(selected_characters):
+    if selected_characters is None:
+        selected_characters = []
+
+    return generate_character_grid(default_roles_mapping['Reference'], selected_characters)
 
 
 @app.callback(
@@ -369,7 +411,7 @@ def toggle_reset_button(stored_data):
 
 # Dash 애플리케이션 정의 및 실행
 if __name__ == '__main__':
-    # update_table_all()
+    update_table_all()
     update_database()
     update_last_time()
 

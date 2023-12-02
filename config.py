@@ -12,8 +12,8 @@ url_mapping[('in_1000', 'currentPatch')] = "https://dak.gg/er/statistics?positio
 url_mapping[('in_1000', '3day')] = "https://dak.gg/er/statistics?position=all&tier=in1000&period=3day"
 url_mapping[('in_1000', '7day')] = "https://dak.gg/er/statistics?position=all&tier=in1000&period=7day"
 
-roles_mapping = {}
-roles_mapping['Melee Carry'] = [
+default_roles_mapping = {}
+default_roles_mapping['Melee Carry'] = [
     "도끼 아비게일",
     "방망이 루크",
     "글러브 리 다이린",
@@ -55,7 +55,7 @@ roles_mapping['Melee Carry'] = [
     "글러브 얀"
 ] # 17
 
-roles_mapping['Skill Ranged Carry'] = [
+default_roles_mapping['Skill Ranged Carry'] = [
     "돌격소총 헤이즈",
     "권총 아야",
     "암기 시셀라",
@@ -89,7 +89,7 @@ roles_mapping['Skill Ranged Carry'] = [
     "톤파 알렉스"
 ] # 26
 
-roles_mapping['Attack Ranged Carry'] = [
+default_roles_mapping['Attack Ranged Carry'] = [
     "활 리오",
     "권총 로지",
     "돌격소총 아야",
@@ -103,7 +103,7 @@ roles_mapping['Attack Ranged Carry'] = [
     "톤파 알렉스"
 ] # 10
 
-roles_mapping['Tanker'] = [
+default_roles_mapping['Tanker'] = [
     "채찍 레녹스",
     "레이피어 엘레나",
     "글러브 알론소",
@@ -114,14 +114,14 @@ roles_mapping['Tanker'] = [
     "망치 마커스"
 ]
 
-roles_mapping['Assassin'] = [
+default_roles_mapping['Assassin'] = [
     "쌍검 캐시",
     "단검 쇼이치",
     "단검 다니엘",
     "단검 캐시"
 ]
 
-roles_mapping['Supporter'] = [
+default_roles_mapping['Supporter'] = [
     "채찍 마이",
     "글러브 레온",
     "저격총 테오도르",
@@ -139,12 +139,12 @@ def custom_sort_korean(lst):
 
     return sorted(lst, key=sort_key)
 
-roles_mapping['Reference'] = []
-for key, value in roles_mapping.items():
-    roles_mapping['Reference'].extend(value)
-roles_mapping['Reference'] = custom_sort_korean(list(set(roles_mapping['Reference'])))
+default_roles_mapping['Reference'] = []
+for key, value in default_roles_mapping.items():
+    default_roles_mapping['Reference'].extend(value)
+default_roles_mapping['Reference'] = custom_sort_korean(list(set(default_roles_mapping['Reference'])))
 
-roles_mapping['User Defined'] = []
+default_roles_mapping['User Defined'] = []
 
 role_translation = {}
 role_translation['Whole'] = '전체'
