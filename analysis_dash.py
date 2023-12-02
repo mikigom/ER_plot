@@ -27,14 +27,14 @@ def adjust_text_position(df, x_col, y_col, text_col):
     # This is a placeholder; actual implementation should calculate based on text size and length
     text_box_width = max(df[text_col].apply(len)) * 0.02  # Width of the text box
     text_box_height = 0.05  # Height of the text box (assuming single line of text)
-    
+
     # Define a function to create bounding boxes for each point
     def get_bounding_boxes(points, text_box_width, text_box_height):
         return [(x - text_box_width / 2, y - text_box_height / 2,
                  x + text_box_width / 2, y + text_box_height / 2) for x, y in points]
-    
+
     bounding_boxes = get_bounding_boxes(points, text_box_width, text_box_height)
-    
+
     # Function to check if two boxes overlap
     def boxes_overlap(box1, box2):
         return not (box1[2] < box2[0] or box1[0] > box2[2] or
@@ -188,13 +188,13 @@ app.layout = html.Div([
             style={'width': '60%', 'display': 'inline-block', 'align-items': 'center', 'justify-content': 'center'}
         ),
     ], style={
-        'position': 'fixed', 
-        'top': '4px', 
-        'left': 0, 
-        'right': 0, 
-        'background-color': 'white', 
+        'position': 'fixed',
+        'top': '4px',
+        'left': 0,
+        'right': 0,
+        'background-color': 'white',
         'z-index': '9999',  # Set a high z-index to ensure it's on top
-        # 'border-bottom': 'solid 1px #d6d6d6', 
+        # 'border-bottom': 'solid 1px #d6d6d6',
         # 'padding': '3px',
         'box-shadow': '0 2px 2px -2px gray'  # Optional: adds shadow for better separation
     }),
@@ -203,9 +203,9 @@ app.layout = html.Div([
     html.Div(style={'height': '55px'}),
 
     # Rest of the layout
-    html.Div(id='slider-value-container', 
+    html.Div(id='slider-value-container',
              style={
-                    'text-align': 'left', 
+                    'text-align': 'left',
                     'margin-top': '30px',
                     'color': TEXT_COLOR,
                     'font-family': GLOBAL_FONT_FAMILY
@@ -307,7 +307,7 @@ def plot_top3_vs_winrate(filtered_df, df, role):
                      color='역할군',  # Use the color column for point colors
                      color_discrete_map={role_translation[role]: "Crimson", "전체": "LightSkyBlue"},
                      custom_data=[filtered_df['Pick Rate']])
-    
+
     # Add the weighted average lines
     weighted_avg_win_per_third = (df['Pick Rate'] * df['Win Rate / Top 3']).sum() / df['Pick Rate'].sum() if df['Pick Rate'].sum() != 0 else 0
     weighted_avg_top_3 = (df['Pick Rate'] * df['TOP 3']).sum() / df['Pick Rate'].sum() if df['Pick Rate'].sum() != 0 else 0
@@ -322,7 +322,7 @@ def plot_top3_vs_winrate(filtered_df, df, role):
                     annotation_position="top right", line_color="green",
                     annotation_font={'size': 12, 'color': 'green'})
 
-        
+
     # Set layout details
     fig.update_layout(
             xaxis_title='<b>Top 3 비율 (%)</b>',
@@ -434,7 +434,7 @@ def plot_rp_vs_win(filtered_df, df, role):
                   annotation_text=f"<b>전체 평균 RP 획득량: {weighted_avg_rpgain:.2f}</b>",
                   annotation_position="bottom right", line_color="orange",
                   annotation_font={'size': 12, 'color': 'orange'})
-    
+
     weighted_sum = (df['Pick Rate'] * df['Win Rate']).sum()
     weighted_avg_rpgain = weighted_sum / total_pick_rate if total_pick_rate != 0 else 0
     fig.add_hline(y=weighted_avg_rpgain, line_dash="dot",
