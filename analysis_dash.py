@@ -1,15 +1,14 @@
 import dash
 import os
-import numpy as np
-from dash import dcc, html, Input, Output, State
+import json
+from dash import dcc, html, Input, Output, State, ALL
 import dash_bootstrap_components as dbc
-from dash import no_update
 import plotly.express as px
 import pandas as pd
 from bs4 import BeautifulSoup
 
 from config import roles_mapping, role_translation
-
+import dash_bootstrap_components as dbc
 
 # Define some style settings
 GLOBAL_FONT_FAMILY = "Helvetica Neue, Helvetica, Arial, sans-serif"
@@ -26,6 +25,24 @@ def custom_sort_korean(lst):
         return ''.join(parts[1:]) if len(parts) > 1 else ''
 
     return sorted(lst, key=sort_key)
+
+
+def generate_character_grid(characters):
+    return html.Div(
+        [dbc.Row(
+            [dbc.Col(html.Div(character, id={'type': 'char-box', 'index': i}, className='character-box', style={
+                'fontSize': '11px',
+                'border': '1px solid #ddd',
+                'padding': '0.5rem',
+                'marginBottom': '0.5rem',
+                'textAlign': 'center',
+                'cursor': 'pointer',
+                'backgroundColor': 'white'
+            }), width='auto') for i, character in enumerate(characters)],
+            className="justify-content-between",
+        )],
+        className="container-fluid"
+    )
 
 
 def adjust_text_position(df, x_col, y_col, text_col):
@@ -102,6 +119,8 @@ def parse_html(file_path):
             return text.replace('#', '')
         elif '-' in text:
             raise AttributeError
+        elif '돌격 소총' in text:
+            text = text.replace('돌격 소총', '돌격소총')
         return text
 
     # Parsing each row
@@ -133,18 +152,13 @@ def parse_html(file_path):
     df = pd.DataFrame(data, columns=columns)
     return df
 
-database = {}
-from config import url_mapping
-for key, url in url_mapping.items():
-    tier, version = key
-    database[key] = parse_html(os.path.join('data', f"('{tier}', '{version}').html"))
-
-
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 app.layout = html.Div([
     # Fixed Div for selection bars
     html.Div([
+        html.Div(id='selected-characters', style={'display': 'none'}),
+        dcc.Store(id='stored-selected-characters'),
         # Dropdown for Version selection
         dcc.Dropdown(
             id='version-dropdown',
@@ -156,7 +170,7 @@ app.layout = html.Div([
             ],
             value='currentPatch',  # Default value
             clearable=False,
-            style={'width': '30%', 'display': 'inline-block', 'align-items': 'center', 'justify-content': 'center'}
+            style={'width': '30%', 'display': 'inline-block', 'alignItems': 'center', 'justifyContent': 'center'}
         ),
         # Dropdown for Tier selection
         dcc.Dropdown(
@@ -168,7 +182,7 @@ app.layout = html.Div([
             ],
             value='platinum_plus',  # Default value
             clearable=False,
-            style={'width': '30%', 'display': 'inline-block', 'align-items': 'center', 'justify-content': 'center'}
+            style={'width': '30%', 'display': 'inline-block', 'alignItems': 'center', 'justifyContent': 'center'}
         ),
         dcc.Dropdown(
             id='role-dropdown',
@@ -184,7 +198,7 @@ app.layout = html.Div([
             ],
             value='Whole',  # Default value
             clearable=False,
-            style={'width': '40%', 'display': 'inline-block', 'align-items': 'center', 'justify-content': 'center'}
+            style={'width': '40%', 'display': 'inline-block', 'alignItems': 'center', 'justifyContent': 'center'}
         ),
         # Dropdown for Comparison selection
         dcc.Dropdown(
@@ -197,7 +211,7 @@ app.layout = html.Div([
             ],
             value='top3_vs_winrate',  # Default value
             clearable=False,
-            style={'width': '60%', 'display': 'inline-block', 'align-items': 'center', 'justify-content': 'center'}
+            style={'width': '60%', 'display': 'inline-block', 'alignItems': 'center', 'justifyContent': 'center'}
         ),
         html.Button(
             '유저 정의 그룹 편집',  # 버튼에 표시될 텍스트
@@ -205,16 +219,16 @@ app.layout = html.Div([
             style={
                 'display': 'inline-block',
                 'padding': '6px 12px',  # 패딩
-                'font-size': '16px',  # 폰트 크기
-                'border-radius': '5px',  # 테두리 둥글기
-                'background-color': PRIMARY_COLOR,  # 배경색
+                'fontSize': '16px',  # 폰트 크기
+                'borderRadius': '5px',  # 테두리 둥글기
+                'backgroundColor': PRIMARY_COLOR,  # 배경색
                 'color': 'white',  # 텍스트 색상
                 'border': 'none',  # 테두리 없음
                 'cursor': 'pointer',  # 마우스 오버 시 커서 변경
                 'position': 'relative',  # 상대적 위치
-                'vertical-align': 'top',  # 수직 정렬,
-                'align-items': 'center',
-                'justify-content': 'center'
+                'verticalAlign': 'top',  # 수직 정렬,
+                'alignItems': 'center',
+                'justifyContent': 'center'
             }
         ),
     ], style={
@@ -222,11 +236,11 @@ app.layout = html.Div([
         'top': '4px',
         'left': 0,
         'right': 0,
-        'background-color': 'white',
-        'z-index': '9999',  # Set a high z-index to ensure it's on top
+        'backgroundColor': 'white',
+        'zIndex': '9999',  # Set a high z-index to ensure it's on top
         # 'border-bottom': 'solid 1px #d6d6d6',
         # 'padding': '3px',
-        'box-shadow': '0 2px 2px -2px gray'  # Optional: adds shadow for better separation
+        'boxShadow': '0 2px 2px -2px gray'  # Optional: adds shadow for better separation
     }),
     # Spacer for content below fixed div
     html.Div(style={'height': '60px'}),
@@ -235,24 +249,30 @@ app.layout = html.Div([
     dbc.Modal(
         [
             dbc.ModalHeader(dbc.ModalTitle("User Defined Roles Editor")),
-            dbc.ModalBody("여기에 Dual List Box 및 기타 컨텐츠를 배치합니다."),
+            dbc.ModalBody(
+                generate_character_grid(roles_mapping['Reference']),
+                style={'maxHeight': 'calc(100vh - 210px)', 'overflowY': 'auto'}
+            ),
             dbc.ModalFooter([
                 dbc.Button("확인", id="confirm-modal", className="ml-auto", n_clicks=0),
-                dbc.Button("취소", id="close-modal", className="ml-auto", n_clicks=0)
+                dbc.Button("초기화", id="reset-modal", className="ml-auto", n_clicks=0),
+                dbc.Button("취소", id="close-modal", className="ml-auto", n_clicks=0),
             ]),
         ],
         id="modal-edit-user-defined-roles",
-        is_open=False,  # 모달은 기본적으로 닫혀 있음
-        style={"zIndex": 1100},  # 모달의 z-index를 상단 바보다 높게 설정
+        is_open=False,
+        style={"zIndex": 1100, "maxWidth": "100vw"},  # Adjusted maxWidth to 100vw for full viewport width
     ),
+    dcc.Store(id='confirm-click-flag', data={'clicked': False}),
+    dcc.Store(id='char-box-styles', data={}),
 
     # Rest of the layout
     html.Div(id='slider-value-container',
              style={
-                    'text-align': 'left',
-                    'margin-top': '30px',
+                    'textAlign': 'left',
+                    'marginTop': '30px',
                     'color': TEXT_COLOR,
-                    'font-family': GLOBAL_FONT_FAMILY
+                    'fontFamily': GLOBAL_FONT_FAMILY
                 }
     ),
     html.Div(id='slider-container', children=[
@@ -263,7 +283,7 @@ app.layout = html.Div([
             value=[0, 1],  # Default value
             updatemode='drag'
         )
-    ], style={'text-align': 'center', 'margin-top': '5px'}),
+    ], style={'textAlign': 'center', 'marginTop': '5px'}),
     dcc.Graph(
         id='scatter-plot',
         config={
@@ -272,8 +292,8 @@ app.layout = html.Div([
         style={'width': '100vw', 'height': '82vh'}  # This makes the graph fill the screen
     ),
 ], style={
-    'font-family': GLOBAL_FONT_FAMILY,
-    'background-color': BACKGROUND_COLOR
+    'fontFamily': GLOBAL_FONT_FAMILY,
+    'backgroundColor': BACKGROUND_COLOR
 }
 )
 
@@ -315,10 +335,11 @@ def update_slider(version, tier, comparison):
      Input('version-dropdown', 'value'),
      Input('tier-dropdown', 'value'),
      Input('comparison-dropdown', 'value'),
-     Input('role-dropdown', 'value')],  # Add the role-dropdown input
+     Input('role-dropdown', 'value'),
+     Input('confirm-click-flag', 'data')],  # Add the confirm-click-flag input
     prevent_initial_call=True
 )
-def update_figure(selected_range, version, tier, comparison, role):
+def update_figure(selected_range, version, tier, comparison, role, confirm_flag):
     df = database[(tier, version)]
 
     filtered_df = df[(df['Pick Rate'] >= selected_range[0]) & (df['Pick Rate'] <= selected_range[1])]
@@ -507,31 +528,103 @@ def plot_rp_vs_win(filtered_df, df, role):
 
 
 @app.callback(
+    [Output('stored-selected-characters', 'data'),
+     Output({'type': 'char-box', 'index': ALL}, 'style')],
+    [Input({'type': 'char-box', 'index': ALL}, 'n_clicks'),
+     Input('reset-modal', 'n_clicks')],
+    [State({'type': 'char-box', 'index': ALL}, 'id'),
+     State({'type': 'char-box', 'index': ALL}, 'style'),
+     State('stored-selected-characters', 'data')],
+    prevent_initial_call=True
+)
+def update_characters_and_styles(all_n_clicks, n_reset, all_ids, all_styles, stored_data):
+    ctx = dash.callback_context
+    triggered_id, triggered_prop = ctx.triggered[0]['prop_id'].split('.')
+
+    default_style = {
+        'fontSize': '11px',
+        'border': '1px solid #ddd',
+        'padding': '0.5rem',
+        'marginBottom': '0.5rem',
+        'textAlign': 'center',
+        'cursor': 'pointer',
+        'backgroundColor': 'white'
+    }
+    selected_style = {
+        'fontSize': '11px',
+        'border': '1px solid #007BFF',  # Highlight the border to indicate selection
+        'padding': '0.5rem',
+        'marginBottom': '0.5rem',
+        'textAlign': 'center',
+        'cursor': 'pointer',
+        'backgroundColor': '#e7f3ff'  # Light blue background for selected items
+    }
+
+    # If the reset button was clicked, reset all styles to default and clear stored data
+    if triggered_prop == 'n_clicks' and 'reset-modal' in triggered_id:
+        return [], [default_style for _ in all_ids]
+
+    # Initialize new_stored_data with stored_data or an empty list if None
+    new_stored_data = stored_data or []
+
+    # Initialize new_styles with all_styles or a list of default styles if None
+    new_styles = all_styles if all_styles is not None else [default_style for _ in all_ids]
+
+    # Proceed if the callback was triggered by a character box click
+    if triggered_prop == 'n_clicks' and 'char-box' in triggered_id:
+        # Identify which character box was clicked
+        clicked_index = json.loads(triggered_id)["index"]
+        character_name = roles_mapping['Reference'][clicked_index]
+
+        # Toggle selection and styling
+        if character_name in new_stored_data:
+            # Deselect and reset style
+            new_stored_data.remove(character_name)
+            new_styles[clicked_index] = default_style
+        else:
+            # Select and update style
+            new_stored_data.append(character_name)
+            new_styles[clicked_index] = selected_style
+
+    # Return the updated stored data and the styles for the character boxes
+    return new_stored_data, new_styles
+
+
+@app.callback(
     Output('modal-edit-user-defined-roles', 'is_open'),
+    Output('confirm-click-flag', 'data'),
     [Input('edit-user-defined-roles-button', 'n_clicks'),
      Input('confirm-modal', 'n_clicks'),
      Input('close-modal', 'n_clicks')],
-    [State('modal-edit-user-defined-roles', 'is_open')]
+    [State('modal-edit-user-defined-roles', 'is_open'),
+     State('stored-selected-characters', 'data')]
 )
-def toggle_modal(n_open, n_close_confirm, n_close_cancle, is_open):
+def toggle_modal(n_open, n_confirm, n_close, is_open, stored_data):
     ctx = dash.callback_context
-
     if not ctx.triggered:
-        return is_open
+        return is_open, dash.no_update
     else:
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
         if button_id == "edit-user-defined-roles-button":
-            if n_open:
-                return True
-        if button_id == "confirm-modal" and n_close_confirm:
-            # Confirm 버튼 클릭 시 수행할 로직을 여기에 추가
-            # 예: 사용자 정의 그룹 저장, 데이터베이스 업데이트 등
-            return False  # 모달 닫기
-        elif button_id == "close-modal" and n_close_cancle:
-            return False  # 모달 닫기
-    return is_open
+            return True, {'clicked': False}
+        elif button_id == "confirm-modal":
+            if n_confirm:
+                roles_mapping['User Defined'] = stored_data or []
+                return False, {'clicked': True}
+        elif button_id == "close-modal":
+            if n_close:
+                return False, {'clicked': False}
+
+    return is_open, {'clicked': False}
 
 
 if __name__ == '__main__':
+    database = {}
+    from config import url_mapping
+    for key, url in url_mapping.items():
+        tier, version = key
+        database[key] = parse_html(os.path.join('data', f"('{tier}', '{version}').html"))
+    roles_mapping['Reference'] = custom_sort_korean(roles_mapping['Reference'])
+
     app.run_server(debug=True)

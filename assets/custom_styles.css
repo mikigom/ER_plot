@@ -18,3 +18,7 @@ body, html {
     height: calc(100vh - 50px); /* Adjust the 50px if you have a header/footer */
     overflow: auto; /* This will allow internal div to scroll if needed */
 }
+
+.character-box:hover {
+    font-weight: bold;
+}
