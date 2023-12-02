@@ -131,10 +131,18 @@ roles_mapping['Supporter'] = [
     "권총 레니"
 ]
 
+def custom_sort_korean(lst):
+    def sort_key(s):
+        parts = s.split(' ')
+        # Join all parts from the second one if there are more than two parts
+        return ''.join(parts[1:]) if len(parts) > 1 else ''
+
+    return sorted(lst, key=sort_key)
+
 roles_mapping['Reference'] = []
 for key, value in roles_mapping.items():
     roles_mapping['Reference'].extend(value)
-roles_mapping['Reference'] = list(set(roles_mapping['Reference']))
+roles_mapping['Reference'] = custom_sort_korean(list(set(roles_mapping['Reference'])))
 
 roles_mapping['User Defined'] = []
 
@@ -147,3 +155,10 @@ role_translation['Tanker'] = '탱커'
 role_translation['Assassin'] = '암살자'
 role_translation['Supporter'] = '서포터'
 role_translation['User Defined'] = '유저 정의'
+
+# Define some style settings
+GLOBAL_FONT_FAMILY = "Helvetica Neue, Helvetica, Arial, sans-serif"
+PRIMARY_COLOR = "#007BFF"
+SECONDARY_COLOR = "#6c757d"
+BACKGROUND_COLOR = "#f8f9fa"
+TEXT_COLOR = "#212529"

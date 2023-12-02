@@ -22,3 +22,14 @@ body, html {
 .character-box:hover {
     font-weight: bold;
 }
+
+.custom-dropdown:hover {
+    background-color: #e8f0fe; /* Slightly lighter background to indicate hover */
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.2); /* Subtle shadow to lift the dropdown */
+}
+
+.custom-button:hover {
+    background-color: #0056b3; /* Darker shade for hover state */
+    transform: scale(1.05); /* Scale button for hover state */
+    transition: background-color 0.2s, transform 0.2s; /* Smooth transition for hover effect */
+}
