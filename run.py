@@ -411,7 +411,6 @@ def toggle_reset_button(stored_data):
 
 # Dash 애플리케이션 정의 및 실행
 if __name__ == '__main__':
-    update_table_all()
     update_database()
     update_last_time()
 
