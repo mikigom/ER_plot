@@ -56,7 +56,7 @@ roles_mapping['Melee Carry'] = [
 ] # 17
 
 roles_mapping['Skill Ranged Carry'] = [
-    "돌격 소총 헤이즈",
+    "돌격소총 헤이즈",
     "권총 아야",
     "암기 시셀라",
     "아르카나 아르다",
@@ -92,8 +92,8 @@ roles_mapping['Skill Ranged Carry'] = [
 roles_mapping['Attack Ranged Carry'] = [
     "활 리오",
     "권총 로지",
-    "돌격 소총 아야",
-    "돌격 소총 아이솔",
+    "돌격소총 아야",
+    "돌격소총 아이솔",
     "저격총 버니스",
     "암기 클로에",
     "기타 하트",
@@ -131,6 +131,13 @@ roles_mapping['Supporter'] = [
     "권총 레니"
 ]
 
+roles_mapping['Reference'] = []
+for key, value in roles_mapping.items():
+    roles_mapping['Reference'].extend(value)
+roles_mapping['Reference'] = list(set(roles_mapping['Reference']))
+
+roles_mapping['User Defined'] = []
+
 role_translation = {}
 role_translation['Whole'] = '전체'
 role_translation['Melee Carry'] = '근거리 딜러'
@@ -139,3 +146,4 @@ role_translation['Attack Ranged Carry'] = '평타 원거리 딜러'
 role_translation['Tanker'] = '탱커'
 role_translation['Assassin'] = '암살자'
 role_translation['Supporter'] = '서포터'
+role_translation['User Defined'] = '유저 정의'

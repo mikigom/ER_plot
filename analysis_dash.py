@@ -1,7 +1,9 @@
 import dash
 import os
 import numpy as np
-from dash import dcc, html, Input, Output
+from dash import dcc, html, Input, Output, State
+import dash_bootstrap_components as dbc
+from dash import no_update
 import plotly.express as px
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -15,6 +17,15 @@ PRIMARY_COLOR = "#007BFF"
 SECONDARY_COLOR = "#6c757d"
 BACKGROUND_COLOR = "#f8f9fa"
 TEXT_COLOR = "#212529"
+
+
+def custom_sort_korean(lst):
+    def sort_key(s):
+        parts = s.split(' ')
+        # Join all parts from the second one if there are more than two parts
+        return ''.join(parts[1:]) if len(parts) > 1 else ''
+
+    return sorted(lst, key=sort_key)
 
 
 def adjust_text_position(df, x_col, y_col, text_col):
@@ -129,7 +140,7 @@ for key, url in url_mapping.items():
     database[key] = parse_html(os.path.join('data', f"('{tier}', '{version}').html"))
 
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 app.layout = html.Div([
     # Fixed Div for selection bars
@@ -169,6 +180,7 @@ app.layout = html.Div([
                 {'label': '탱커', 'value': 'Tanker'},
                 {'label': '암살자', 'value': 'Assassin'},
                 {'label': '서포터', 'value': 'Supporter'},
+                {'label': '유저 정의', 'value': 'User Defined'},
             ],
             value='Whole',  # Default value
             clearable=False,
@@ -187,6 +199,24 @@ app.layout = html.Div([
             clearable=False,
             style={'width': '60%', 'display': 'inline-block', 'align-items': 'center', 'justify-content': 'center'}
         ),
+        html.Button(
+            '유저 정의 그룹 편집',  # 버튼에 표시될 텍스트
+            id='edit-user-defined-roles-button',  # 버튼의 고유 ID
+            style={
+                'display': 'inline-block',
+                'padding': '6px 12px',  # 패딩
+                'font-size': '16px',  # 폰트 크기
+                'border-radius': '5px',  # 테두리 둥글기
+                'background-color': PRIMARY_COLOR,  # 배경색
+                'color': 'white',  # 텍스트 색상
+                'border': 'none',  # 테두리 없음
+                'cursor': 'pointer',  # 마우스 오버 시 커서 변경
+                'position': 'relative',  # 상대적 위치
+                'vertical-align': 'top',  # 수직 정렬,
+                'align-items': 'center',
+                'justify-content': 'center'
+            }
+        ),
     ], style={
         'position': 'fixed',
         'top': '4px',
@@ -198,9 +228,23 @@ app.layout = html.Div([
         # 'padding': '3px',
         'box-shadow': '0 2px 2px -2px gray'  # Optional: adds shadow for better separation
     }),
-
     # Spacer for content below fixed div
-    html.Div(style={'height': '55px'}),
+    html.Div(style={'height': '60px'}),
+    # 모달 컴포넌트에 z-index 스타일 추가
+    # Modal component update with Confirm and Close buttons
+    dbc.Modal(
+        [
+            dbc.ModalHeader(dbc.ModalTitle("User Defined Roles Editor")),
+            dbc.ModalBody("여기에 Dual List Box 및 기타 컨텐츠를 배치합니다."),
+            dbc.ModalFooter([
+                dbc.Button("확인", id="confirm-modal", className="ml-auto", n_clicks=0),
+                dbc.Button("취소", id="close-modal", className="ml-auto", n_clicks=0)
+            ]),
+        ],
+        id="modal-edit-user-defined-roles",
+        is_open=False,  # 모달은 기본적으로 닫혀 있음
+        style={"zIndex": 1100},  # 모달의 z-index를 상단 바보다 높게 설정
+    ),
 
     # Rest of the layout
     html.Div(id='slider-value-container',
@@ -219,7 +263,7 @@ app.layout = html.Div([
             value=[0, 1],  # Default value
             updatemode='drag'
         )
-    ], style={'text-align': 'center', 'margin-top': '20px'}),
+    ], style={'text-align': 'center', 'margin-top': '5px'}),
     dcc.Graph(
         id='scatter-plot',
         config={
@@ -461,6 +505,32 @@ def plot_rp_vs_win(filtered_df, df, role):
         trace.update(textposition=position)
     return fig
 
+
+@app.callback(
+    Output('modal-edit-user-defined-roles', 'is_open'),
+    [Input('edit-user-defined-roles-button', 'n_clicks'),
+     Input('confirm-modal', 'n_clicks'),
+     Input('close-modal', 'n_clicks')],
+    [State('modal-edit-user-defined-roles', 'is_open')]
+)
+def toggle_modal(n_open, n_close_confirm, n_close_cancle, is_open):
+    ctx = dash.callback_context
+
+    if not ctx.triggered:
+        return is_open
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+        if button_id == "edit-user-defined-roles-button":
+            if n_open:
+                return True
+        if button_id == "confirm-modal" and n_close_confirm:
+            # Confirm 버튼 클릭 시 수행할 로직을 여기에 추가
+            # 예: 사용자 정의 그룹 저장, 데이터베이스 업데이트 등
+            return False  # 모달 닫기
+        elif button_id == "close-modal" and n_close_cancle:
+            return False  # 모달 닫기
+    return is_open
 
 
 if __name__ == '__main__':
