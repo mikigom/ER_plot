@@ -60,7 +60,7 @@ def generate_character_grid(characters, selected_characters):
             ) for i, character in enumerate(characters)],
             className="justify-content-between",
         )],
-        className="container-fluid"
+        className="container"
     )
 
 
@@ -185,27 +185,71 @@ app.layout = html.Div([
             style={
                     'textAlign': 'left',
                     'marginLeft': '10px',
-                    'marginTop': '-10px',  # Reduced from 30px to 10px
+                    # 'marginTop': '-20px',  # Reduced from 30px to 10px
                     'color': TEXT_COLOR,
                     'fontFamily': GLOBAL_FONT_FAMILY,
                     'fontSize': '14px'
                 }
     ),
-    html.Div(id='slider-container', children=[
-        dcc.RangeSlider(
+
+    # Container for slider value and slider
+    html.Div([
+        # Container for displaying the slider value
+        # html.Div(id='slider-value-container', children='Selected pick rate will be displayed here', style={
+        #             'textAlign': 'left',
+        #             'marginLeft': '10px',
+        #             'marginTop': '-16px',  # Reduced from 30px to 10px
+        #             'color': TEXT_COLOR,
+        #             'fontFamily': GLOBAL_FONT_FAMILY,
+        #             'fontSize': '14px'
+        #         }),
+        html.Div(id='slider-value-container', children='Selected pick rate will be displayed here', style={
+            'textAlign': 'center',  # Center align text
+            'marginTop': '-16px',
+            'marginLeft': '5px',
+            # 'margin': '0 10px',  # Add margin to the left and right
+            'padding': '5px 10px',  # Add padding inside the container
+            'background-color': '#f8f9fa',  # Light grey background
+            'border-radius': '5px',  # Rounded corners
+            'border': '1px solid #dee2e6',  # Light grey border
+            'box-shadow': '0 2px 4px rgba(0, 0, 0, 0.1)',  # Subtle shadow
+            'display': 'inline-block',  # Allow the div to size to content
+            'color': TEXT_COLOR,
+            'fontFamily': GLOBAL_FONT_FAMILY,
+            # 'fontWeight': 'bold',  # Bold font weight
+            'fontSize': '14px'
+        }),
+
+        # Container for the slider
+        html.Div([
+           dcc.RangeSlider(
             id='pick-rate-slider',
             min=0,  # Default minimum
             max=1,  # Default maximum
             value=[0, 1],  # Default value
-            updatemode='drag'
-        )
-    ], style={'textAlign': 'center', 'margin': '1rem'}),
+            updatemode='drag',
+            step=0.02,
+            tooltip={"placement": "bottom", "always_visible": True}
+        ),
+        ], id='slider-container', style={
+            'flex': '2',  # Slider can take up twice as much space
+            # 'padding': '0 10px',  # Add some padding
+        }),
+    ], style={
+        'display': 'flex',  # Use Flexbox
+        'align-items': 'center',  # Align items vertically in the center
+        'justify-content': 'start',  # Start alignment
+        'flex-wrap': 'nowrap',  # Prevent wrapping to a new line
+        'width': '100%',  # Ensure the container takes full width
+        'box-sizing': 'border-box',  # Include padding in the width calculation
+    }),
+
     html.Div([
         # Customized Graph Style
         dcc.Graph(
             id='scatter-plot',
             config={'scrollZoom': True, 'displayModeBar': True},  # Hide modebar if not necessary
-            style={'width': '100%', 'height': '84vh'}  # Adjusted for responsiveness
+            style={'width': '100%', 'height': '88vh'}  # Adjusted for responsiveness
         ),
         html.Div(
             id='last-update-time',
@@ -214,7 +258,7 @@ app.layout = html.Div([
                 'color': TEXT_COLOR,
                 'fontFamily': GLOBAL_FONT_FAMILY,
                 'fontSize': '12px',
-                'paddingLeft': '5px',
+                # 'paddingLeft': '1px',
                 "zIndex": 1100,
                 "left": "10px",
                 "position": "fixed",
@@ -231,7 +275,7 @@ app.layout = html.Div([
                     'color': PRIMARY_COLOR,
                     'fontFamily': GLOBAL_FONT_FAMILY,
                     'fontSize': '12px',
-                    'paddingRight': '5px',
+                    # 'paddingRight': '5px',
                     'textDecoration': 'none',
                     "position": "fixed",
                     "right": "10px",
@@ -259,27 +303,46 @@ def update_output(value, comparison):
     return f'선택된 유효 픽률 범위: {min_value:.2f}% ~ {max_value:.2f}%'
 
 
-# Callback for updating RangeSlider's min, max, and value based on dropdowns
 @app.callback(
     Output('pick-rate-slider', 'min'),
     Output('pick-rate-slider', 'max'),
     Output('pick-rate-slider', 'value'),
+    Output('pick-rate-slider', 'marks'),
     [Input('version-dropdown', 'value'),
-     Input('tier-dropdown', 'value'),
-     Input('comparison-dropdown', 'value')]
+     Input('tier-dropdown', 'value')]
 )
-def update_slider(version, tier, comparison):
+def update_slider(version, tier):
     database = get_database()
-    df = database[(tier, version)]
+    df_selected = database[(tier, version)]
+
+    # Calculate quantiles for the slider
+    quantile_values = df_selected['Pick Rate'].quantile([0.25, 0.5, 0.75])
+
+    # Find the closest characters corresponding to the quantiles
+    characters_at_quantiles = {}
+    for quantile, value in quantile_values.items():
+        closest_index = (df_selected['Pick Rate'] - value).abs().idxmin()
+        characters_at_quantiles[value] = df_selected.loc[closest_index, 'Character']
 
     # Calculate min and max for the slider
-    min_value = df['Pick Rate'].min() if 'Pick Rate' in df.columns else 0
-    max_value = df['Pick Rate'].max() if 'Pick Rate' in df.columns else 1
+    min_value = df_selected['Pick Rate'].min() if 'Pick Rate' in df_selected.columns else 0
+    max_value = df_selected['Pick Rate'].max() if 'Pick Rate' in df_selected.columns else 1
 
-    # Set the slider value to span the entire range initially
-    slider_value = [0.3, max_value]
+    # Find the characters corresponding to the min and max pick rate
+    min_char = df_selected.loc[df_selected['Pick Rate'].idxmin(), 'Character']
+    max_char = df_selected.loc[df_selected['Pick Rate'].idxmax(), 'Character']
 
-    return min_value, max_value, slider_value
+    # Create the marks with character labels
+    marks = {
+        str(min_value): {'label': min_char, 'style': {'color': '#f50'}},
+        **{str(key): {'label': value, 'style': {'color': '#555'}} for key, value in characters_at_quantiles.items()},
+        str(max_value): {'label': max_char, 'style': {'color': '#77b0b1'}}
+    }
+
+    # Adjust the slider value if necessary
+    slider_value = [0.3, 1.1 * max_value]
+
+    return 0, 1.1 * max_value, slider_value, marks
 
 
 @app.callback(

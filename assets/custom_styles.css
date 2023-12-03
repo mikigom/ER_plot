@@ -33,3 +33,8 @@ body, html {
     transform: scale(1.05); /* Scale button for hover state */
     transition: background-color 0.2s, transform 0.2s; /* Smooth transition for hover effect */
 }
+
+#pick-rate-slider.rangeslider__handle:last-of-type {
+    background-color: grey !important;
+    cursor: not-allowed !important;
+}
