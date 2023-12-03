@@ -1,51 +1,54 @@
-# ER Black Survival Visualization & Analysis Tool
+# ER Plot: 블랙 서바이벌 랭크 게임 통계 시각화 도구
 
-![Alt text](assets/image.png)
+![대체 텍스트](assets/image.png)
 
-This repository is dedicated to a non-commercial project for analyzing characters in the ranked games of Eternal Return Black Survival. Utilizing data from dak.gg, this system allows for interactive post-game analysis. It is not affiliated with, nor endorsed by [Nimble Neuron](https://nimbleneuron.com/) or [dak.gg](https://dak.gg/).
+이 저장소는 Eternal Return Black Survival의 랭크 게임 내 캐릭터 분석을 위한 비상업적 프로젝트입니다. dak.gg에서 가져온 데이터를 활용하여, 이 시스템은 게임 후 분석을 상호작용적으로 수행할 수 있게 해줍니다. 이 프로젝트는 [Nimble Neuron](https://nimbleneuron.com/) 또는 [dak.gg](https://dak.gg/)와는 관련이 없으며 그들에 의해 승인되거나 지지받지 않습니다.
 
-## Description
+## 설명
 
-The project's goal is to provide an interactive platform for visual and statistical analysis of characters based on various performance metrics such as pick rate, win rate, Top 3 frequency, and RP gains.
+이 프로젝트의 목적은 픽률, 승률, Top 3 빈도 및 RP 획득량과 같은 다양한 성능 지표를 기반으로 캐릭터의 시각적 및 통계적 분석을 위한 상호작용 플랫폼을 제공하는 것입니다.
 
-Key Features:
+주요 특징:
 
-- Interactive plots that visually compare characters based on pick rate, win rate, Top 3 finishes, and RP acquisition.
-- Automatic updates every 3 hours to keep the data fresh. Data source is from [dak.gg](https://dak.gg/er/statistics).
-- Comparative analysis across different game versions, tiers, and positions.
-- Customization options for users to highlight groups of characters they are particularly interested in.
-- Full advantage of plotly's capabilities: point hovering, zooming in/out, and more for an enhanced user experience.
+- 픽률, 승률, Top 3 완성도 및 RP 획득량을 기준으로 캐릭터를 시각적으로 비교하는 상호작용형 플롯.
+- 데이터를 새롭게 유지하기 위해 3시간마다 자동 업데이트. 데이터 소스는 [dak.gg](https://dak.gg/er/statistics)에서 가져옴.
+- 다른 게임 버전, 티어 및 포지션에 걸쳐 비교 분석.
+- 사용자가 특히 관심 있는 캐릭터 그룹을 강조할 수 있는 사용자 정의 옵션.
+- 포인트 호버링, 확대/축소 등 plotly의 모든 기능을 활용하여 향상된 데이터 시각화.
+- 활동 중인 (추정) 세션 수 추적.
 
-## Installation
+## 설치
 
 ```bash
-# Clone the repository
+# 저장소를 복제합니다.
 git clone https://github.com/mikigom/ER_plot
 
-# Navigate to the repository directory
+# 저장소 디렉토리로 이동합니다.
 cd ER_plot
 
-# Install required dependencies
+# 필요한 종속성을 설치합니다.
 pip install -r requirements.txt
 ```
 
-## Usage
+## 사용법
 
 ```bash
-# Run the application
+# 애플리케이션을 실행합니다.
 python run.py
 ```
 
-This will launch a web service that serves the interactive data visualization interface.
+이 명령어는 상호작용 데이터 시각화 인터페이스를 제공하는 웹 서비스를 시작합니다.
 
-## Contributing
+## 기여하기
 
-Contributions are welcome! Please fork the repository and submit a pull request with your suggested changes.
+기여를 환영합니다. 저장소를 포크하고 제안하는 변경 사항을 풀 리퀘스트로 제출해 주세요.
+기능 요청 및 버그 리포트도 환영하지만, 제 개인 사정으로 대부분 즉각적인 반영이 힘들 수 있음을 양해 바랍니다.
+만약 기능 요청 및 버그 리포트를 원한다면, 이슈로서 남겨주세요.
 
-## Credits
+## 크레딧
 
-This tool was created by [Junghoon Seo](https://mikigom.github.io/) seeking to enhance the gaming experience for fans of Eternal Return Black Survival.
+이 도구는 ER의 유저들을 위해 [@MikiBear_](https://twitter.com/MikiBear_)에 의해 만들어졌습니다.
 
-## License
+## 라이선스
 
-This project is released under the MIT License - please see the LICENSE file for details.
+이 프로젝트는 MIT 라이선스 하에 공개되어 있습니다 - 자세한 내용은 LICENSE 파일을 참조해 주세요.
