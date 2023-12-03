@@ -1,4 +1,5 @@
 # ER Plot: 블랙 서바이벌 랭크 게임 통계 시각화 도구
+English version of README is [here](README_eng.md).
 
 ![대체 텍스트](assets/image.png)
 
