@@ -16,7 +16,7 @@ default_roles_mapping = {}
 default_roles_mapping['Melee Carry'] = [
     "도끼 아비게일",
     "방망이 루크",
-    "글러브 리 다이린",
+    "글러브  이린",
     "레이피어 키아라",
     "양손검 에이든",
     "VF의수 에키온",
@@ -131,18 +131,15 @@ default_roles_mapping['Supporter'] = [
     "권총 레니"
 ]
 
-def custom_sort_korean(lst):
-    def sort_key(s):
-        parts = s.split(' ')
-        # Join all parts from the second one if there are more than two parts
-        return ''.join(parts[1:]) if len(parts) > 1 else ''
 
-    return sorted(lst, key=sort_key)
-
-default_roles_mapping['Reference'] = []
+reference_list = []
 for key, value in default_roles_mapping.items():
-    default_roles_mapping['Reference'].extend(value)
-default_roles_mapping['Reference'] = custom_sort_korean(list(set(default_roles_mapping['Reference'])))
+    for whole_name in value:
+        character_name = ''.join(whole_name.split(' ')[1:])
+        if character_name == '리다이린':
+            character_name = '리 다이린'
+        reference_list.append(character_name)
+default_roles_mapping['Reference'] = sorted(list(set(reference_list)))
 
 default_roles_mapping['User Defined'] = []
 

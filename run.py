@@ -76,12 +76,12 @@ server = app.server
 
 app.layout = html.Div([
     # Fixed Div for selection bars
-    dcc.Store(id='session_roles_mapping', storage_type='local'),
+    dcc.Store(id='session_roles_mapping', storage_type='memory'),
     dcc.Store(id='session-id', storage_type='session'),
     dcc.Interval(id='init-interval', interval=1, n_intervals=0),
     html.Div([
         html.Div(id='selected-characters', style={'display': 'none'}),
-        dcc.Store(id='stored-selected-characters', storage_type='local'),
+        dcc.Store(id='stored-selected-characters', storage_type='memory'),
         # Dropdown for Comparison selection
         dcc.Dropdown(
             id='comparison-dropdown',
@@ -301,8 +301,11 @@ def update_figure(selected_range, version, tier, comparison, role, confirm_flag,
     df = database[(tier, version)]
 
     filtered_df = df[(df['Pick Rate'] >= selected_range[0]) & (df['Pick Rate'] <= selected_range[1])]
-    # Determine the color for the points based on the role
-    if role != 'Whole':
+    if role == 'User Defined':
+        filtered_df['역할군'] = filtered_df['Character'].apply(
+            lambda x: role_translation[role] if any(item in x for item in session_roles_mapping[role]) else '전체'
+        )
+    elif role != 'Whole':
         # If a specific role is selected, characters in that role will have a different color
         filtered_df['역할군'] = filtered_df['Character'].apply(lambda x: role_translation[role] if x in session_roles_mapping[role] else '전체')
     else:
