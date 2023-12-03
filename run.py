@@ -1,5 +1,9 @@
+import uuid
+import datetime
+import threading
 import dash
 import copy
+import time
 import threading
 import json
 from dash import dcc, html, Input, Output, State, ALL
@@ -17,6 +21,30 @@ from update_table import update_table_all, update_database, update_last_time, ru
 from plot import customize_plot, plot_top3_vs_winrate, pick_pick_vs_win, plot_pick_vs_rp, plot_rp_vs_win
 from styles import dropdown_style, button_style, container_style, default_character_style, selected_character_style
 
+
+# 세션 정보를 저장할 딕셔너리
+running_session_ids = {}
+
+def generate_session_id():
+    return str(uuid.uuid4())
+
+def update_session_activity(session_id):
+    running_session_ids[session_id] = datetime.datetime.now()
+
+def remove_expired_sessions():
+    while True:
+        current_time = datetime.datetime.now()
+        expired_sessions = [session_id for session_id, last_active in running_session_ids.items()
+                            if (current_time - last_active).total_seconds() > 300]
+        for session_id in expired_sessions:
+            del running_session_ids[session_id]
+
+        # running_session_ids를 파일에 로깅
+        with open("session_log.txt", "a", encoding='UTF-8') as log_file:
+            now = datetime.datetime.now().strftime("%Y-%d-%m %H:%M:%S")
+            log_file.write(f"[{now}]: 현재 활성 세션 - {list(running_session_ids.keys())}\n")
+
+        time.sleep(300)  # 매 300초마다 실행
 
 def generate_character_grid(characters, selected_characters):
     return html.Div(
@@ -50,6 +78,7 @@ server.secret_key = 'rlatngksanrjqnrdldhkenfnal'  # 안전한 키를 설정하�
 app.layout = html.Div([
     # Fixed Div for selection bars
     dcc.Store(id='session_roles_mapping', storage_type='local'),
+    dcc.Store(id='session-id', storage_type='session'),
     dcc.Interval(id='init-interval', interval=1, n_intervals=0),
     html.Div([
         html.Div(id='selected-characters', style={'display': 'none'}),
@@ -409,6 +438,21 @@ def toggle_reset_button(stored_data):
     return not stored_data
 
 
+@app.callback(
+    Output('session-id', 'data'),
+    [Input('scatter-plot', 'figure')],
+    [State('session-id', 'data')]
+)
+def manage_session(figure, existing_session_id):
+    if existing_session_id is None:
+        new_session_id = generate_session_id()
+        update_session_activity(new_session_id)
+        return new_session_id
+    else:
+        update_session_activity(existing_session_id)
+        return existing_session_id
+
+
 # Dash 애플리케이션 정의 및 실행
 if __name__ == '__main__':
     update_database()
@@ -417,6 +461,10 @@ if __name__ == '__main__':
     # 주기적 업데이트 스레드 시작
     update_thread = threading.Thread(target=run_periodic_update, daemon=True)
     update_thread.start()
+
+    # 세션 만료 처리 스레드 시작
+    expiration_thread = threading.Thread(target=remove_expired_sessions, daemon=True)
+    expiration_thread.start()
 
     print("[Dash] Run...")
     app.run_server(debug=False)
