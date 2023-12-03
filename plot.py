@@ -107,7 +107,7 @@ def plot_top3_vs_winrate(filtered_df, df, role, role_translation):
     )
 
     # Customize the appearance of the hover box
-    fig.update_traces(hoverlabel=dict(bgcolor='RoyalBlue', font_size=14, font_family='Arial'))
+    # fig.update_traces(hoverlabel=dict(bgcolor='RoyalBlue', font_size=14, font_family='Arial'))
 
     return fig
 

@@ -536,4 +536,4 @@ if __name__ == '__main__':
     expiration_thread.start()
 
     print("[Dash] Run...")
-    app.run_server(debug=True)
+    app.run_server(debug=False)
