@@ -1,0 +1,13 @@
+dash_bootstrap_components
+threading
+webdriver_manager
+warnings
+bs4
+styles
+config
+selenium
+dash
+pandas
+update_table
+plot
+plotly
