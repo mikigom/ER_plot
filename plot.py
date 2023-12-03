@@ -51,6 +51,18 @@ def customize_plot(fig):
         plot_bgcolor='white'
     )
 
+    fig.update_layout(legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1,
+        xanchor="left",
+        x=0.01,
+        bgcolor="GhostWhite",
+        bordercolor="LightSteelBlue",
+        borderwidth=1
+    ))
+
+    fig.update_layout(legend_title_text='')
     return fig
 
 

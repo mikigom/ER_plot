@@ -312,6 +312,10 @@ def update_figure(selected_range, version, tier, comparison, role, confirm_flag,
         # If 'Whole' is selected, all characters have the same color
         filtered_df['역할군'] = '전체'
 
+    filtered_df['sort_column'] = filtered_df['역할군'] == '전체'
+    filtered_df.sort_values(by='sort_column', inplace=True, ascending=False)
+    filtered_df.drop('sort_column', axis=1, inplace=True)
+
     if comparison == 'top3_vs_winrate':
         fig = plot_top3_vs_winrate(filtered_df, df, role, role_translation)
     elif comparison == 'pick_vs_win':
@@ -469,4 +473,4 @@ if __name__ == '__main__':
     expiration_thread.start()
 
     print("[Dash] Run...")
-    app.run_server(debug=False)
+    app.run_server(debug=True)
