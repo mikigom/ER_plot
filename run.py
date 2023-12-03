@@ -70,9 +70,8 @@ external_css = [
     'https://codepen.io/chriddyp/pen/bWLwgP.css',  # Example external CSS
     '/assets/custom_styles.css'  # Path to your custom CSS file
 ]
-app = dash.Dash(__name__, external_stylesheets=external_css)
+app = dash.Dash(__name__, external_stylesheets=external_css, title='ER Plot')
 server = app.server
-server.secret_key = 'rlatngksanrjqnrdldhkenfnal'  # 안전한 키를 설정하세요.
 
 
 app.layout = html.Div([
