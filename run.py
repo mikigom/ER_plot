@@ -248,7 +248,9 @@ app.layout = html.Div([
         # Customized Graph Style
         dcc.Graph(
             id='scatter-plot',
-            config={'scrollZoom': True, 'displayModeBar': True},  # Hide modebar if not necessary
+            config={'scrollZoom': True, 'displayModeBar': True,
+                    'showTips': False, 'displaylogo': False,
+                    'modeBarButtonsToRemove': ['lasso2d', 'resetScale2d']},  # Hide modebar if not necessary
             style={'width': '100%', 'height': '88vh'}  # Adjusted for responsiveness
         ),
         html.Div(
