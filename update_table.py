@@ -24,7 +24,7 @@ global database
 
 def update_table(url, local_path):
     # Use the appropriate method to initialize the Chrome driver based on Selenium version
-    if version.parse(installed_selenium_version) >= version.parse("3.141.0"):
+    if version.parse(installed_selenium_version) > version.parse("3.141.0"):
         # For newer versions of Selenium
         from selenium.webdriver.chrome.service import Service
         webdriver_service = Service(ChromeDriverManager().install())
