@@ -1,10 +1,15 @@
 import os
 import pandas as pd
+from packaging import version
+import selenium
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
+
+
+# Check the installed Selenium version
+installed_selenium_version = selenium.__version__
 
 # Set up Chrome options
 chrome_options = Options()
@@ -18,11 +23,15 @@ global database
 
 
 def update_table(url, local_path):
-    # Set path to chromedriver as per your configuration
-    webdriver_service = Service(ChromeDriverManager().install())
-
-    # Choose Chrome Browser
-    driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
+    # Use the appropriate method to initialize the Chrome driver based on Selenium version
+    if version.parse(installed_selenium_version) >= version.parse("3.141.0"):
+        # For newer versions of Selenium
+        from selenium.webdriver.chrome.service import Service
+        webdriver_service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
+    else:
+        # For older versions of Selenium
+        driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
 
     # WebDriver will wait for a page to load by default. Let's make sure we wait for JavaScript to load.
     driver.get(url)
