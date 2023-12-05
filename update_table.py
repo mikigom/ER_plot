@@ -30,8 +30,13 @@ def update_table(url, local_path):
         webdriver_service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
     else:
-        # For older versions of Selenium
-        driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
+        from selenium.webdriver.firefox.options import Options as FirefoxOptions
+        from webdriver_manager.firefox import GeckoDriverManager
+        # Set up Firefox options
+        firefox_options = FirefoxOptions()
+        firefox_options.add_argument("--headless")  # Ensure GUI is off
+        # Initialize the Firefox driver
+        driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=firefox_options)
 
     # WebDriver will wait for a page to load by default. Let's make sure we wait for JavaScript to load.
     driver.get(url)
