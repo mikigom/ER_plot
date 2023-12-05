@@ -538,4 +538,5 @@ if __name__ == '__main__':
     expiration_thread.start()
 
     print("[Dash] Run...")
+    context = ('certs/local.crt','certs/local.key')
     app.run_server(debug=False)
