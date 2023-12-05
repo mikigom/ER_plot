@@ -8,10 +8,6 @@ import threading
 import json
 from dash import dcc, html, Input, Output, State, ALL
 import dash_bootstrap_components as dbc
-import warnings
-
-from pandas.errors import SettingWithCopyWarning
-warnings.simplefilter(action='ignore', category=(SettingWithCopyWarning))
 
 from config import GLOBAL_FONT_FAMILY, PRIMARY_COLOR, BACKGROUND_COLOR, TEXT_COLOR
 from config import default_roles_mapping
@@ -366,18 +362,20 @@ def update_figure(selected_range, version, tier, comparison, role, confirm_flag,
     df = database[(tier, version)]
 
     filtered_df = df[(df['Pick Rate'] >= selected_range[0]) & (df['Pick Rate'] <= selected_range[1])]
+    filtered_df_copied = copy.deepcopy(filtered_df)
     if role == 'User Defined':
-        filtered_df['역할군'] = filtered_df['Character'].apply(
+        filtered_df_copied.loc[:, '역할군'] = filtered_df['Character'].apply(
             lambda x: role_translation[role] if any(item in x for item in session_roles_mapping[role]) else '전체'
         )
     elif role != 'Whole':
         # If a specific role is selected, characters in that role will have a different color
-        filtered_df['역할군'] = filtered_df['Character'].apply(lambda x: role_translation[role] if x in session_roles_mapping[role] else '전체')
+        filtered_df_copied.loc[:, '역할군'] = filtered_df['Character'].apply(lambda x: role_translation[role] if x in session_roles_mapping[role] else '전체')
     else:
         # If 'Whole' is selected, all characters have the same color
-        filtered_df['역할군'] = '전체'
+        filtered_df_copied.loc[:, '역할군'] = '전체'
+    filtered_df = filtered_df_copied
 
-    filtered_df['sort_column'] = filtered_df['역할군'] == '전체'
+    filtered_df.loc[:, 'sort_column'] = filtered_df['역할군'] == '전체'
     filtered_df.sort_values(by='sort_column', inplace=True, ascending=False)
     filtered_df.drop('sort_column', axis=1, inplace=True)
 
@@ -539,4 +537,4 @@ if __name__ == '__main__':
 
     print("[Dash] Run...")
     context = ('certs/local.crt','certs/local.key')
-    app.run_server(debug=False)
+    app.run_server(debug=True)
