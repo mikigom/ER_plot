@@ -31,7 +31,9 @@ def update_table(url, local_path):
         driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
     else:
         # For older versions of Selenium
-        driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
+        from webdriver_manager.utils import ChromeType
+        driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install(), options=chrome_options)
+        # driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
 
     # WebDriver will wait for a page to load by default. Let's make sure we wait for JavaScript to load.
     driver.get(url)
