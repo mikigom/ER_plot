@@ -1,10 +1,15 @@
 import os
 import pandas as pd
+import selenium
+from packaging import version
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
+
+# Check the installed Selenium version
+installed_selenium_version = selenium.__version__
 
 # Set up Chrome options
 chrome_options = Options()
