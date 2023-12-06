@@ -63,6 +63,7 @@ def customize_plot(fig):
     ))
 
     fig.update_layout(legend_title_text='')
+    fig.update_layout(dragmode='pan')
     return fig
 
 
@@ -104,6 +105,52 @@ def plot_top3_vs_winrate(filtered_df, df, role, role_translation):
     # Customize hover info for each trace (point)
     fig.update_traces(
         hovertemplate='<b>%{text}</b><br>Top 3 비율: %{x:.2f}%<br>Top 3 시 승률: %{y:.2f}%<br>픽률: %{customdata[0]:.2f}%<extra></extra>'
+    )
+
+    # Customize the appearance of the hover box
+    # fig.update_traces(hoverlabel=dict(bgcolor='RoyalBlue', font_size=14, font_family='Arial'))
+
+    return fig
+
+
+def plot_tk_vs_top3(filtered_df, df, role, role_translation):
+    sizes = 3 + (filtered_df['Pick Rate'] - df['Pick Rate'].min()) / (df['Pick Rate'].max() - df['Pick Rate'].min()) * 120
+
+    fig = px.scatter(filtered_df, x='Average TK', y='TOP 3', text='Character', size=sizes,
+                     color='역할군',  # Use the color column for point colors
+                     color_discrete_map={role_translation[role]: "Crimson", "전체": "LightSkyBlue"},
+                     custom_data=[filtered_df['Pick Rate']])
+
+    # Add the weighted average lines
+    weighted_avg_tk = (df['Pick Rate'] * df['Average TK']).sum() / df['Pick Rate'].sum() if df['Pick Rate'].sum() != 0 else 0
+    weighted_avg_top_3 = (df['Pick Rate'] * df['TOP 3']).sum() / df['Pick Rate'].sum() if df['Pick Rate'].sum() != 0 else 0
+
+    fig.add_vline(x=weighted_avg_tk, line_dash="dot",
+                    annotation_text=f"<b>평균 팀킬 수: {weighted_avg_tk:.2f}</b>",
+                    annotation_position="bottom right", line_color="orange",
+                    annotation_font={'size': 12, 'color': 'orange'})
+
+    fig.add_hline(y=weighted_avg_top_3, line_dash="dot",
+                    annotation_text=f"<b>평균 3등 확보 비율: {weighted_avg_top_3:.2f}%</b>",
+                    annotation_position="top right", line_color="green",
+                    annotation_font={'size': 12, 'color': 'green'})
+
+
+    # Set layout details
+    fig.update_layout(
+            xaxis_title='<b>평균 팀킬 수</b>',
+            yaxis_title='<b>평균 3등 확보 비율 (%)</b>',
+            plot_bgcolor='white',
+            hovermode='closest',
+        )
+
+    text_positions = adjust_text_position(df, 'Average TK', 'TOP 3', 'Character')
+    for trace, position in zip(fig.data, text_positions):
+        trace.update(textposition=position)
+
+    # Customize hover info for each trace (point)
+    fig.update_traces(
+        hovertemplate='<b>%{text}</b><br>평균 팀킬 수: %{x:.2f}%<br>평균 3등 확보 비율: %{y:.2f}%<br>픽률: %{customdata[0]:.2f}%<extra></extra>'
     )
 
     # Customize the appearance of the hover box

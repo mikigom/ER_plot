@@ -14,7 +14,7 @@ from config import default_roles_mapping
 from config import role_translation
 import dash_bootstrap_components as dbc
 from update_table import update_table_all, update_database, update_last_time, run_periodic_update, get_last_update_time, get_database
-from plot import customize_plot, plot_top3_vs_winrate, pick_pick_vs_win, plot_pick_vs_rp, plot_rp_vs_win
+from plot import customize_plot, plot_top3_vs_winrate, pick_pick_vs_win, plot_pick_vs_rp, plot_rp_vs_win, plot_tk_vs_top3
 from styles import dropdown_style, button_style, container_style, default_character_style, selected_character_style
 
 
@@ -96,6 +96,7 @@ app.layout = html.Div([
                 {'label': '픽률 vs 승률', 'value': 'pick_vs_win'},
                 {'label': '픽률 vs RP 획득량', 'value': 'pick_vs_rp'},
                 {'label': 'Top 3 비율 vs Top 3 확보 시 승률', 'value': 'top3_vs_winrate'},
+                {'label': '평균 팀킬 수 vs Top 3 비율', 'value': 'tk_vs_top3'},
                 {'label': 'RP 획득량 vs 승률', 'value': 'rp_vs_win'}
             ],
             value='top3_vs_winrate',  # Default value
@@ -245,7 +246,8 @@ app.layout = html.Div([
             id='scatter-plot',
             config={'scrollZoom': True, 'displayModeBar': True,
                     'showTips': False, 'displaylogo': False,
-                    'modeBarButtonsToRemove': ['lasso2d', 'resetScale2d']},  # Hide modebar if not necessary
+                    'dragmode': 'pan',
+                    'modeBarButtonsToRemove': ['lasso2d', 'resetScale2d', 'select']},  # Hide modebar if not necessary
             style={'width': '100%', 'height': '88vh'}  # Adjusted for responsiveness
         ),
         html.Div(
@@ -263,15 +265,16 @@ app.layout = html.Div([
         ),
         html.Div(
             html.A(
-                "Project Page",
-                href="https://github.com/mikigom/ER_plot",
+                "Manual Page",
+                href="https://github.com/mikigom/ER_plot/wiki",
                 target="_blank",
                 style={
                     'textAlign': 'right',
                     'display': 'block',
                     'color': PRIMARY_COLOR,
                     'fontFamily': GLOBAL_FONT_FAMILY,
-                    'fontSize': '12px',
+                    'fontSize': '14px',
+                    'paddingBottom': '4px',
                     # 'paddingRight': '5px',
                     'textDecoration': 'none',
                     "position": "fixed",
@@ -386,6 +389,8 @@ def update_figure(selected_range, version, tier, comparison, role, confirm_flag,
         fig = plot_pick_vs_rp(filtered_df, df, role, role_translation)
     elif comparison == 'rp_vs_win':
         fig = plot_rp_vs_win(filtered_df, df, role, role_translation)
+    elif comparison == 'tk_vs_top3':
+        fig = plot_tk_vs_top3(filtered_df, df, role, role_translation)
 
     fig = customize_plot(fig)
 
