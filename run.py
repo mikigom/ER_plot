@@ -187,18 +187,6 @@ app.layout = html.Div([
 
     dcc.Store(id='confirm-click-flag', data={'clicked': False}, storage_type='memory'),
 
-    # Rest of the layout
-    html.Div(id='slider-value-container',
-            style={
-                    'textAlign': 'left',
-                    'marginLeft': '10px',
-                    # 'marginTop': '-20px',  # Reduced from 30px to 10px
-                    'color': TEXT_COLOR,
-                    'fontFamily': GLOBAL_FONT_FAMILY,
-                    'fontSize': '14px'
-                }
-    ),
-
     # Container for slider value and slider
     html.Div([
         # Container for displaying the slider value
