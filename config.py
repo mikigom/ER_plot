@@ -1,16 +1,16 @@
 url_mapping = {}
-url_mapping[('platinum_plus', 'prevPatch')] = "https://dak.gg/er/statistics?tier=platinum_plus&period=prevPatch"
-url_mapping[('platinum_plus', 'currentPatch')] = "https://dak.gg/er/statistics?tier=platinum_plus&period=currentPatch"
-url_mapping[('platinum_plus', '3day')] = "https://dak.gg/er/statistics?tier=platinum_plus&period=3day"
-url_mapping[('platinum_plus', '7day')] = "https://dak.gg/er/statistics?tier=platinum_plus&period=7day"
-url_mapping[('diamond_plus', 'prevPatch')] = "https://dak.gg/er/statistics?tier=diamond_plus&period=prevPatch"
-url_mapping[('diamond_plus', 'currentPatch')] = "https://dak.gg/er/statistics?tier=diamond_plus&period=currentPatch"
-url_mapping[('diamond_plus', '3day')] = "https://dak.gg/er/statistics?tier=diamond_plus&period=3day"
-url_mapping[('diamond_plus', '7day')] = "https://dak.gg/er/statistics?tier=diamond_plus&period=7day"
-url_mapping[('in_1000', 'prevPatch')] = "https://dak.gg/er/statistics?position=all&tier=in1000&period=prevPatch"
-url_mapping[('in_1000', 'currentPatch')] = "https://dak.gg/er/statistics?position=all&tier=in1000&period=currentPatch"
-url_mapping[('in_1000', '3day')] = "https://dak.gg/er/statistics?position=all&tier=in1000&period=3day"
-url_mapping[('in_1000', '7day')] = "https://dak.gg/er/statistics?position=all&tier=in1000&period=7day"
+url_mapping[('platinum_plus', 'prevPatch')] = "https://dak.gg/er/statistics?hl=ko&tier=platinum_plus&period=prevPatch"
+url_mapping[('platinum_plus', 'currentPatch')] = "https://dak.gg/er/statistics?hl=ko&tier=platinum_plus&period=currentPatch"
+url_mapping[('platinum_plus', '3day')] = "https://dak.gg/er/statistics?hl=ko&tier=platinum_plus&period=3day"
+url_mapping[('platinum_plus', '7day')] = "https://dak.gg/er/statistics?hl=ko&tier=platinum_plus&period=7day"
+url_mapping[('diamond_plus', 'prevPatch')] = "https://dak.gg/er/statistics?hl=ko&tier=diamond_plus&period=prevPatch"
+url_mapping[('diamond_plus', 'currentPatch')] = "https://dak.gg/er/statistics?hl=ko&tier=diamond_plus&period=currentPatch"
+url_mapping[('diamond_plus', '3day')] = "https://dak.gg/er/statistics?hl=ko&tier=diamond_plus&period=3day"
+url_mapping[('diamond_plus', '7day')] = "https://dak.gg/er/statistics?hl=ko&tier=diamond_plus&period=7day"
+url_mapping[('in_1000', 'prevPatch')] = "https://dak.gg/er/statistics?hl=ko&position=all&tier=in1000&period=prevPatch"
+url_mapping[('in_1000', 'currentPatch')] = "https://dak.gg/er/statistics?hl=ko&position=all&tier=in1000&period=currentPatch"
+url_mapping[('in_1000', '3day')] = "https://dak.gg/er/statistics?hl=ko&position=all&tier=in1000&period=3day"
+url_mapping[('in_1000', '7day')] = "https://dak.gg/er/statistics?hl=ko&position=all&tier=in1000&period=7day"
 
 default_roles_mapping = {}
 default_roles_mapping['Melee Carry'] = [
