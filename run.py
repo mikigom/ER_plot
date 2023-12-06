@@ -28,6 +28,14 @@ def update_session_activity(session_id):
     running_session_ids[session_id] = datetime.datetime.now()
 
 def remove_expired_sessions():
+    def trim_log_file(file_path, max_lines=200000):
+        with open(file_path, 'r', encoding='UTF-8') as file:
+            lines = file.readlines()
+
+        if len(lines) > max_lines:
+            with open(file_path, 'w', encoding='UTF-8') as file:
+                file.writelines(lines[-max_lines:])
+
     while True:
         current_time = datetime.datetime.now()
         expired_sessions = [session_id for session_id, last_active in running_session_ids.items()
@@ -39,6 +47,9 @@ def remove_expired_sessions():
         with open("session_log.txt", "a", encoding='UTF-8') as log_file:
             now = datetime.datetime.now().strftime("%Y-%d-%m %H:%M:%S")
             log_file.write(f"[{now}]: 현재 활성 세션 - {list(running_session_ids.keys())}\n")
+
+        # Check and trim the log file if it exceeds 200,000 lines
+        trim_log_file("session_log.txt")
 
         time.sleep(300)  # 매 300초마다 실행
 
@@ -537,4 +548,4 @@ if __name__ == '__main__':
 
     print("[Dash] Run...")
     context = ('certs/local.crt','certs/local.key')
-    app.run_server(debug=True)
+    app.run_server(debug=False, host='0.0.0.0', port=8050)

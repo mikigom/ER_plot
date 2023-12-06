@@ -29,6 +29,10 @@ cd ER_plot
 
 # 필요한 종속성을 설치합니다.
 pip install -r requirements.txt
+
+sudo apt install chromium-chromedriver
+# 만약 최신 버전의 chromium-chromedriver의 사용이 불가능하다면
+sudo apt-get install firefox
 ```
 
 ## 사용법
