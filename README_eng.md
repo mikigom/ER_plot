@@ -1,4 +1,5 @@
 # ER Plot: ER Black Survival Rank Game Stats Visualization Tool
+Live Server: **https://er-plot.xyz/**
 
 ![Alt text](assets/image.png)
 
