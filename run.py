@@ -1,4 +1,5 @@
 import uuid
+import traceback
 import datetime
 import threading
 import dash
@@ -13,7 +14,7 @@ from config import GLOBAL_FONT_FAMILY, PRIMARY_COLOR, BACKGROUND_COLOR, TEXT_COL
 from config import default_roles_mapping
 from config import role_translation
 import dash_bootstrap_components as dbc
-from update_table import update_table_all, update_database, update_last_time, run_periodic_update, get_last_update_time, get_database
+from update_table import update_database, update_last_time, run_periodic_update, get_last_update_time, get_database
 from plot import customize_plot, plot_top3_vs_winrate, pick_pick_vs_win, plot_pick_vs_rp, plot_rp_vs_win, plot_tk_vs_top3
 from styles import dropdown_style, button_style, container_style, default_character_style, selected_character_style
 
@@ -526,17 +527,38 @@ def manage_session(figure, existing_session_id):
         return existing_session_id
 
 
+def safe_run_periodic_update():
+    while True:
+        try:
+            run_periodic_update()
+        except Exception as e:
+            print(f"Error in run_periodic_update: {e}")
+            traceback.print_exc()
+            # Optional: Wait some time before restarting
+            time.sleep(10)
+
+def safe_remove_expired_sessions():
+    while True:
+        try:
+            remove_expired_sessions()
+        except Exception as e:
+            print(f"Error in remove_expired_sessions: {e}")
+            traceback.print_exc()
+            # Optional: Wait some time before restarting
+            time.sleep(10)
+
+
 # Dash 애플리케이션 정의 및 실행
 if __name__ == '__main__':
     update_database()
     update_last_time()
 
     # 주기적 업데이트 스레드 시작
-    update_thread = threading.Thread(target=run_periodic_update, daemon=True)
+    update_thread = threading.Thread(target=safe_run_periodic_update, daemon=True)
     update_thread.start()
 
     # 세션 만료 처리 스레드 시작
-    expiration_thread = threading.Thread(target=remove_expired_sessions, daemon=True)
+    expiration_thread = threading.Thread(target=safe_remove_expired_sessions, daemon=True)
     expiration_thread.start()
 
     print("[Dash] Run...")
