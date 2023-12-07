@@ -50,7 +50,7 @@ def remove_expired_sessions():
             log_file.write(f"[{now}]: 현재 활성 세션 - {list(running_session_ids.keys())}\n")
 
         # Check and trim the log file if it exceeds 200,000 lines
-        trim_log_file("session_log.txt")
+        trim_log_file("logs/session_log.txt")
 
         time.sleep(300)  # 매 300초마다 실행
 
