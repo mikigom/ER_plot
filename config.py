@@ -100,7 +100,8 @@ default_roles_mapping['Attack Ranged Carry'] = [
     "투척 윌리엄",
     "석궁 나딘",
     "카메라 마르티나",
-    "톤파 알렉스"
+    "톤파 알렉스",
+    "암기 츠바메"
 ] # 10
 
 default_roles_mapping['Tanker'] = [
