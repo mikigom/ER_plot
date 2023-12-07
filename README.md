@@ -1,4 +1,6 @@
 # ER Plot: 블랙 서바이벌 랭크 게임 통계 시각화 도구
+Live Server: **https://er-plot.xyz/**
+
 English version of README is [here](README_eng.md).
 
 ![대체 텍스트](assets/image.png)
@@ -35,14 +37,14 @@ sudo apt install chromium-chromedriver
 sudo apt-get install firefox
 ```
 
-## 사용법
+## 사용법 및 메뉴얼
 
 ```bash
 # 애플리케이션을 실행합니다.
 python run.py
 ```
 
-이 명령어는 상호작용 데이터 시각화 인터페이스를 제공하는 웹 서비스를 시작합니다.
+메뉴얼: [Link](https://github.com/mikigom/ER_plot/wiki/ER-Plot)
 
 ## 기여하기
 
