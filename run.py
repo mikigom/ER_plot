@@ -45,7 +45,7 @@ def remove_expired_sessions():
             del running_session_ids[session_id]
 
         # running_session_ids를 파일에 로깅
-        with open("session_log.txt", "a", encoding='UTF-8') as log_file:
+        with open("logs/session_log.txt", "a", encoding='UTF-8') as log_file:
             now = datetime.datetime.now().strftime("%Y-%d-%m %H:%M:%S")
             log_file.write(f"[{now}]: 현재 활성 세션 - {list(running_session_ids.keys())}\n")
 
