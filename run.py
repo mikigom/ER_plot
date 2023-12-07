@@ -562,5 +562,5 @@ if __name__ == '__main__':
     expiration_thread.start()
 
     print("[Dash] Run...")
-    context = ('certs/local.pem','certs/local.key')
-    app.run_server(debug=False, host='0.0.0.0', port=80, ssl_context=context)
+    context = ('/etc/letsencrypt/live/er-plot.xyz/fullchain.pem', '/etc/letsencrypt/live/er-plot.xyz/privkey.pem')
+    app.run_server(debug=False, host='0.0.0.0', port=443, ssl_context=context)
