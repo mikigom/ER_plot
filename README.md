@@ -5,7 +5,7 @@ English version of README is [here](README_eng.md).
 
 ![대체 텍스트](assets/image.png)
 
-이 저장소는 Eternal Return Black Survival의 랭크 게임 내 캐릭터 분석을 위한 비상업적 프로젝트입니다. dak.gg에서 가져온 데이터를 활용하여, 이 시스템은 게임 후 분석을 상호작용적으로 수행할 수 있게 해줍니다. 이 프로젝트는 [Nimble Neuron](https://nimbleneuron.com/) 또는 [dak.gg](https://dak.gg/)와는 관련이 없으며 그들에 의해 승인되거나 지지받지 않습니다.
+이 저장소는 Eternal Return Black Survival의 랭크 게임 내 캐릭터 분석을 위한 비상업적 프로젝트입니다. dak.gg에서 가져온 데이터를 활용하여, 이 시스템은 게임 후 분석을 상호작용적으로 수행할 수 있게 해줍니다. 이 프로젝트는 [Nimble Neuron](https://nimbleneuron.com/) 또는 [dak.gg](https://dak.gg/)와는 관련이 없습니다.
 
 ## 설명
 
