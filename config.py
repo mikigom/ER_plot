@@ -52,7 +52,8 @@ default_roles_mapping['Melee Carry'] = [
     "망치 수아",
     "단검 재키",
     "톤파 얀",
-    "글러브 얀"
+    "글러브 얀",
+    "도끼 케네스"
 ] # 17
 
 default_roles_mapping['Skill Ranged Carry'] = [
@@ -112,7 +113,8 @@ default_roles_mapping['Tanker'] = [
     "망치 일레븐",
     "채찍 마이",
     "도끼 에스텔",
-    "망치 마커스"
+    "망치 마커스",
+    "도끼 케네스"
 ]
 
 default_roles_mapping['Assassin'] = [
