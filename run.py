@@ -29,7 +29,7 @@ def update_session_activity(session_id):
     running_session_ids[session_id] = datetime.datetime.now()
 
 def remove_expired_sessions():
-    def trim_log_file(file_path, max_lines=200000):
+    def trim_log_file(file_path, max_lines=2000):
         with open(file_path, 'r', encoding='UTF-8') as file:
             lines = file.readlines()
 
@@ -550,16 +550,16 @@ def safe_remove_expired_sessions():
 
 # Dash 애플리케이션 정의 및 실행
 if __name__ == '__main__':
-    update_database()
-    update_last_time()
+    # update_database()
+    # update_last_time()
 
-    # 주기적 업데이트 스레드 시작
-    update_thread = threading.Thread(target=safe_run_periodic_update, daemon=True)
-    update_thread.start()
+    # # 주기적 업데이트 스레드 시작
+    # update_thread = threading.Thread(target=safe_run_periodic_update, daemon=True)
+    # update_thread.start()
 
-    # 세션 만료 처리 스레드 시작
-    expiration_thread = threading.Thread(target=safe_remove_expired_sessions, daemon=True)
-    expiration_thread.start()
+    # # 세션 만료 처리 스레드 시작
+    # expiration_thread = threading.Thread(target=safe_remove_expired_sessions, daemon=True)
+    # expiration_thread.start()
 
     print("[Dash] Run...")
     context = ('/etc/letsencrypt/live/er-plot.xyz/fullchain.pem', '/etc/letsencrypt/live/er-plot.xyz/privkey.pem')
