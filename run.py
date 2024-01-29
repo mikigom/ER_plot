@@ -550,8 +550,8 @@ def safe_remove_expired_sessions():
 
 # Dash 애플리케이션 정의 및 실행
 if __name__ == '__main__':
-    # update_database()
-    # update_last_time()
+    update_database()
+    update_last_time()
 
     # # 주기적 업데이트 스레드 시작
     # update_thread = threading.Thread(target=safe_run_periodic_update, daemon=True)
