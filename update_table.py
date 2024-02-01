@@ -1,4 +1,5 @@
 import os
+import threading
 import pandas as pd
 import selenium
 from packaging import version
@@ -6,6 +7,10 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
+
+# 전역 변수에 대한 스레드 락
+database_lock = threading.Lock()
+last_update_time_lock = threading.Lock()
 
 # Check the installed Selenium version
 installed_selenium_version = selenium.__version__
@@ -22,45 +27,47 @@ global database
 
 
 def update_table(url, local_path):
-    # Use the appropriate method to initialize the Chrome driver based on Selenium version
-    if version.parse(installed_selenium_version) > version.parse("3.141.0"):
-        # For newer versions of Selenium
-        from selenium.webdriver.chrome.service import Service
-        webdriver_service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
-    else:
-        from selenium.webdriver.firefox.options import Options as FirefoxOptions
-        from webdriver_manager.firefox import GeckoDriverManager
-        # Set up Firefox options
-        firefox_options = FirefoxOptions()
-        firefox_options.add_argument("--headless")  # Ensure GUI is off
-        # Initialize the Firefox driver
-        driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=firefox_options)
+    try:
+        # Use the appropriate method to initialize the Chrome driver based on Selenium version
+        if version.parse(installed_selenium_version) > version.parse("3.141.0"):
+            # For newer versions of Selenium
+            from selenium.webdriver.chrome.service import Service
+            webdriver_service = Service(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
+        else:
+            from selenium.webdriver.firefox.options import Options as FirefoxOptions
+            from webdriver_manager.firefox import GeckoDriverManager
+            # Set up Firefox options
+            firefox_options = FirefoxOptions()
+            firefox_options.add_argument("--headless")  # Ensure GUI is off
+            # Initialize the Firefox driver
+            driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=firefox_options)
 
-    # WebDriver will wait for a page to load by default. Let's make sure we wait for JavaScript to load.
-    driver.get(url)
+        # WebDriver will wait for a page to load by default. Let's make sure we wait for JavaScript to load.
+        driver.get(url)
 
-    # Wait for the necessary element to load on the page
-    driver.implicitly_wait(100)  # You can adjust the wait time as per the page's response time.
+        # Wait for the necessary element to load on the page
+        driver.implicitly_wait(100)  # You can adjust the wait time as per the page's response time.
 
-    # Now that the page is fully loaded, grab the page source.
-    html = driver.page_source
+        # Now that the page is fully loaded, grab the page source.
+        html = driver.page_source
 
-    # Parse the HTML content of the page using BeautifulSoup
-    soup = BeautifulSoup(html, 'html.parser')
+        # Parse the HTML content of the page using BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
 
-    # Find the table with the specific class
-    table = soup.find('table', {'class': 'w-full text-[12px]'})
+        # Find the table with the specific class
+        table = soup.find('table', {'class': 'w-full text-[12px]'})
 
-    # Save the table to an HTML file
-    if table:
-        with open(local_path, 'w', encoding='utf-8') as file:
-            file.write(str(table))
-    else:
-        print('Table not found')
-
-    # Clean up (close the browser)
-    driver.quit()
+        # Save the table to an HTML file
+        if table:
+            with open(local_path, 'w', encoding='utf-8') as file:
+                file.write(str(table))
+        else:
+            print('Table not found')
+    except Exception as e:
+        print(f"Error updating table: {e}")
+    finally:
+        driver.quit()
 
 
 def parse_html(file_path):
@@ -129,11 +136,15 @@ def update_table_all():
 def update_database():
     from config import url_mapping
     global database
-    database_ = {}
-    for key, url in url_mapping.items():
-        tier, version = key
-        database_[key] = parse_html(os.path.join('data', f"('{tier}', '{version}').html"))
-    database = database_
+    try:
+        database_ = {}
+        for key, url in url_mapping.items():
+            tier, version = key
+            database_[key] = parse_html(os.path.join('data', f"('{tier}', '{version}').html"))
+        with database_lock:
+            database = database_
+    except Exception as e:
+        print(f"Error updating database: {e}")
 
 
 def update_last_time():
@@ -146,7 +157,9 @@ def update_last_time():
 
     # 형식에 맞게 시간을 문자열로 변환
     time_str = now.strftime("%Y/%m/%d %H:%M UTC+9")
-    last_update_time = time_str
+
+    with last_update_time_lock:
+        last_update_time = time_str
 
     # 파일에 기록
     with open('data/last_update_time.txt', 'w', encoding='utf-8') as f:

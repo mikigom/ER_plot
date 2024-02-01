@@ -553,14 +553,14 @@ if __name__ == '__main__':
     update_database()
     update_last_time()
 
-    # # 주기적 업데이트 스레드 시작
-    # update_thread = threading.Thread(target=safe_run_periodic_update, daemon=True)
-    # update_thread.start()
+    # 주기적 업데이트 스레드 시작
+    update_thread = threading.Thread(target=safe_run_periodic_update, daemon=True)
+    update_thread.start()
 
-    # # 세션 만료 처리 스레드 시작
-    # expiration_thread = threading.Thread(target=safe_remove_expired_sessions, daemon=True)
-    # expiration_thread.start()
+    # 세션 만료 처리 스레드 시작
+    expiration_thread = threading.Thread(target=safe_remove_expired_sessions, daemon=True)
+    expiration_thread.start()
 
     print("[Dash] Run...")
     context = ('/etc/letsencrypt/live/er-plot.xyz/fullchain.pem', '/etc/letsencrypt/live/er-plot.xyz/privkey.pem')
-    app.run_server(debug=False, host='0.0.0.0', port=443, ssl_context=context)
+    app.run_server(debug=False, host='0.0.0.0', port=443)#, ssl_context=context)
