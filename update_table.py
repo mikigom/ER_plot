@@ -4,6 +4,9 @@ import pandas as pd
 import selenium
 from packaging import version
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
@@ -27,6 +30,7 @@ global database
 
 
 def update_table(url, local_path):
+    driver = None
     try:
         # Use the appropriate method to initialize the Chrome driver based on Selenium version
         if version.parse(installed_selenium_version) > version.parse("3.141.0"):
@@ -46,8 +50,9 @@ def update_table(url, local_path):
         # WebDriver will wait for a page to load by default. Let's make sure we wait for JavaScript to load.
         driver.get(url)
 
-        # Wait for the necessary element to load on the page
-        driver.implicitly_wait(100)  # You can adjust the wait time as per the page's response time.
+        # 페이지의 특정 요소가 로드될 때까지 대기
+        wait = WebDriverWait(driver, 100)  # 최대 100초 대기
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.w-full.text-\\[12px\\]")))
 
         # Now that the page is fully loaded, grab the page source.
         html = driver.page_source
@@ -67,7 +72,8 @@ def update_table(url, local_path):
     except Exception as e:
         print(f"Error updating table: {e}")
     finally:
-        driver.quit()
+        if driver:
+            driver.quit()
 
 
 def parse_html(file_path):
