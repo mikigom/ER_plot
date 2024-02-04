@@ -166,7 +166,7 @@ def update_last_time():
     time_str = now.strftime("%Y/%m/%d %H:%M UTC+9")
 
     with last_update_time_lock:
-        last_update_time = time_str
+        last_update_time = copy.deepcopy(time_str)
 
     # 파일에 기록
     with open('data/last_update_time.txt', 'w', encoding='utf-8') as f:
@@ -184,10 +184,12 @@ def run_periodic_update():
 
 
 def get_last_update_time():
-    return last_update_time
+    with last_update_time_lock:
+        return last_update_time
 
 def get_database():
-    return database
+    with database_lock:
+        return database
 
 
 
