@@ -1,4 +1,5 @@
 import os
+import copy
 import threading
 import pandas as pd
 import selenium
@@ -148,7 +149,7 @@ def update_database():
             tier, version = key
             database_[key] = parse_html(os.path.join('data', f"('{tier}', '{version}').html"))
         with database_lock:
-            database = database_
+            database = copy.deepcopy(database_)
     except Exception as e:
         print(f"Error updating database: {e}")
 
