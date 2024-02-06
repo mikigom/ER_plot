@@ -4,7 +4,7 @@ import copy
 import threading
 import pandas as pd
 import selenium
-from filelock import FileLock
+from filelock import FileLock, Timeout
 from packaging import version
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -68,8 +68,8 @@ def update_table(url, local_path):
 
         # Save the table to an HTML file
         if table:
-            with FileLock(local_path):
-                with open(local_path, 'w', encoding='utf-8') as file:
+            with open(local_path, 'w', encoding='utf-8') as file:
+                with FileLock(local_path  + '.lock'):
                     file.write(str(table))
         else:
             print('Table not found')
@@ -82,8 +82,8 @@ def update_table(url, local_path):
 
 def parse_html(file_path):
     # Since the format of the data in the file is unknown, I will first open the file and read its content to understand its structure.
-    with FileLock(file_path):
-        with open(file_path, 'r', encoding='utf-8') as file:
+    with open(file_path, 'r', encoding='utf-8') as file:
+        with FileLock(file_path + '.lock'):
             lines = file.readlines()
 
     # Using BeautifulSoup to parse the HTML content
@@ -169,15 +169,15 @@ def update_last_time():
     time_str = now.strftime("%Y/%m/%d %H:%M UTC+9")
 
     # 파일에 기록
-    with FileLock("data/last_update_time.txt"):
-        with open('data/last_update_time.txt', 'w', encoding='utf-8') as f:
+    with open('data/last_update_time.txt', 'w', encoding='utf-8') as f:
+        with FileLock("data/last_update_time.txt" + '.lock'):
             f.write(time_str)
 
 def update_last_time_from_file():
     global last_update_time
 
-    with FileLock("data/last_update_time.txt"):
-        with open('data/last_update_time.txt', 'r', encoding='utf-8') as f:
+    with open('data/last_update_time.txt', 'r', encoding='utf-8') as f:
+        with FileLock("data/last_update_time.txt" + '.lock'):
             time_str = f.read()
 
     with last_update_time_lock:
