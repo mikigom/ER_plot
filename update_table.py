@@ -187,7 +187,7 @@ def update_last_time_from_file():
 # update_table을 주기적으로 실행하는 함수
 def run_periodic_update():
     while True:
-        time.sleep(10800)
+        time.sleep(600)
         update_database()
         update_last_time_from_file()
 
