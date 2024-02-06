@@ -193,15 +193,17 @@ def run_periodic_update():
 
 
 def get_last_update_time():
+    global last_update_time
     with last_update_time_lock:
         return last_update_time
 
 def get_database():
+    global database
     with database_lock:
         return database
 
 
 if __name__ == '__main__':
-    time.sleep(10800)
     update_table_all()
     update_last_time()
+    time.sleep(10800)
