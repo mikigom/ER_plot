@@ -1,10 +1,8 @@
 import os
-import time
 import copy
 import threading
 import pandas as pd
 import selenium
-from filelock import FileLock, Timeout
 from packaging import version
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -69,8 +67,7 @@ def update_table(url, local_path):
         # Save the table to an HTML file
         if table:
             with open(local_path, 'w', encoding='utf-8') as file:
-                with FileLock(local_path  + '.lock'):
-                    file.write(str(table))
+                file.write(str(table))
         else:
             print('Table not found')
     except Exception as e:
@@ -83,8 +80,7 @@ def update_table(url, local_path):
 def parse_html(file_path):
     # Since the format of the data in the file is unknown, I will first open the file and read its content to understand its structure.
     with open(file_path, 'r', encoding='utf-8') as file:
-        with FileLock(file_path + '.lock'):
-            lines = file.readlines()
+        lines = file.readlines()
 
     # Using BeautifulSoup to parse the HTML content
     soup = BeautifulSoup("".join(lines), 'html.parser')
@@ -161,6 +157,7 @@ def update_database():
 def update_last_time():
     from datetime import datetime
     import pytz
+    global last_update_time
     # 현재 시간을 UTC+9 시간대로 변환
     tz = pytz.timezone('Asia/Tokyo')  # UTC+9 시간대
     now = datetime.now(tz)
@@ -168,42 +165,33 @@ def update_last_time():
     # 형식에 맞게 시간을 문자열로 변환
     time_str = now.strftime("%Y/%m/%d %H:%M UTC+9")
 
-    # 파일에 기록
-    with open('data/last_update_time.txt', 'w', encoding='utf-8') as f:
-        with FileLock("data/last_update_time.txt" + '.lock'):
-            f.write(time_str)
-
-def update_last_time_from_file():
-    global last_update_time
-
-    with open('data/last_update_time.txt', 'r', encoding='utf-8') as f:
-        with FileLock("data/last_update_time.txt" + '.lock'):
-            time_str = f.read()
-
     with last_update_time_lock:
         last_update_time = copy.deepcopy(time_str)
+
+    # 파일에 기록
+    with open('data/last_update_time.txt', 'w', encoding='utf-8') as f:
+        f.write(time_str)
 
 
 # update_table을 주기적으로 실행하는 함수
 def run_periodic_update():
+    import time
     while True:
-        time.sleep(600)
+        time.sleep(10800)  # 3시간 대기 (3시간 = 10800초)
+        update_table_all()
         update_database()
-        update_last_time_from_file()
+        update_last_time()
 
 
 def get_last_update_time():
-    global last_update_time
     with last_update_time_lock:
         return last_update_time
 
 def get_database():
-    global database
     with database_lock:
         return database
 
 
+
 if __name__ == '__main__':
     update_table_all()
-    update_last_time()
-    time.sleep(10800)
