@@ -5,3 +5,4 @@ selenium
 dash
 pandas
 plotly
+filelock
