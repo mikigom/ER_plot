@@ -1,6 +1,7 @@
 import os
 import copy
 import threading
+import gc
 import pandas as pd
 import selenium
 from packaging import version
@@ -177,8 +178,7 @@ def update_last_time():
 def run_periodic_update():
     import time
     while True:
-        time.sleep(10800)  # 3시간 대기 (3시간 = 10800초)
-        update_table_all()
+        time.sleep(10800)
         update_database()
         update_last_time()
 
@@ -190,7 +190,6 @@ def get_last_update_time():
 def get_database():
     with database_lock:
         return database
-
 
 
 if __name__ == '__main__':
